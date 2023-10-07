@@ -26,6 +26,16 @@ public class ChestLockListener implements Listener {
             Block block = event.getBlock();
             BlockData blockData = block.getBlockData();
 
+            Sign sign = (Sign) block.getState();
+
+            if ("[Locked]".equalsIgnoreCase(sign.getLine(0))) {
+                if (!player.getName().equals(sign.getLine(1)) && !player.hasPermission("smp.chestlock.bypass")) {
+                    player.sendMessage(ChatUtils.coloredChat(ChatUtils.PREFIX + "&cYou cannot edit this locked sign!"));
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
             if (blockData instanceof WallSign || blockData instanceof org.bukkit.block.data.type.Sign && isChest(getAttachedBlock(block).getType())) {
                 event.setLine(0, "[Locked]");
                 event.setLine(1, player.getName());
