@@ -5,6 +5,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -12,6 +13,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import plugins.nate.smp.SMP;
@@ -80,6 +82,34 @@ public class ChestLockListener implements Listener {
                 if (!player.getName().equals(sign.getLine(1)) && !player.hasPermission("smp.chestlock.bypass")) {
                     player.sendMessage(ChatUtils.coloredChat(ChatUtils.PREFIX + "&cYou cannot break a lock"));
                     event.setCancelled(true);
+                }
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onHopperPlace(BlockPlaceEvent event) {
+        Block block = event.getBlockPlaced();
+
+        if (block.getType() != Material.HOPPER) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+
+        BlockFace[] facesToCheck = {BlockFace.UP, ((Directional) block.getBlockData()).getFacing()};
+
+        for (BlockFace face : facesToCheck) {
+            Block adjacentBlock = block.getRelative(face);
+
+            if (isStorageContainer(adjacentBlock.getType())) {
+                Sign attachedSign = getAttachedSign(adjacentBlock);
+                if (attachedSign != null && "[Locked]".equals(attachedSign.getLine(0))) {
+                    if (!player.getName().equals(attachedSign.getLine(1)) && !player.hasPermission("smp.chestlock.bypass")) {
+                        player.sendMessage(ChatUtils.coloredChat(ChatUtils.PREFIX + "&cYou cannot place a hopper next to a locked container"));
+                        event.setCancelled(true);
+                        return;
+                    }
                 }
             }
         }
