@@ -1,0 +1,22 @@
+name: SMP
+version: '${version}'
+main: plugins.nate.smp.SMP
+api-version: 1.20
+depend:
+  - Essentials
+
+commands:
+  plugins:
+    usage: /<command>
+  pl:
+    usage: /<command>
+  bukkit:plugins:
+    usage: /<command>
+  claim:
+    description: Get the claiming tool
+    usage: /<command>
+
+permissions:
+  smp.chestlock.bypass:
+    description: Allows bypassing of chest locks.
+    default: op
