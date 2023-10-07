@@ -13,6 +13,11 @@ This is a custom solution dedicated to providing the players with a unique vanil
 
 ## Changelog
 
+### 1.3.4
+- Added trust system to allow other users to access your chests.
+- Added /smp help
+- Added /smp trust, /smp untrust, and /smp trustlist copmmands
+
 ### 1.3.3
 - Fixed bug where unauthorized users could place hoppers on locked chests
 - Added /smp reload
