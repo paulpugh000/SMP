@@ -12,8 +12,10 @@ commands:
     usage: /<command>
   bukkit:plugins:
     usage: /<command>
-  claim:
-    description: Get the claiming tool
+#  claim:
+#    description: Get the claiming tool
+#    usage: /<command>
+  smp:
     usage: /<command>
 
 permissions:
