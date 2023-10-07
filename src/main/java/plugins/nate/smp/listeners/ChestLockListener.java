@@ -14,29 +14,31 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import plugins.nate.smp.SMP;
 import plugins.nate.smp.utils.ChatUtils;
 
 import java.util.Arrays;
 
 public class ChestLockListener implements Listener {
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onSignChange(SignChangeEvent event) {
-        if (Arrays.stream(event.getLines()).anyMatch("[Lock]"::equalsIgnoreCase)) {
-            Player player = event.getPlayer();
-            Block block = event.getBlock();
-            BlockData blockData = block.getBlockData();
+        Player player = event.getPlayer();
+        Block block = event.getBlock();
 
-            Sign sign = (Sign) block.getState();
+        Sign sign = (Sign) block.getState();
 
-            if ("[Locked]".equalsIgnoreCase(sign.getLine(0))) {
-                if (!player.getName().equals(sign.getLine(1)) && !player.hasPermission("smp.chestlock.bypass")) {
-                    player.sendMessage(ChatUtils.coloredChat(ChatUtils.PREFIX + "&cYou cannot edit this locked sign!"));
-                    event.setCancelled(true);
-                    return;
-                }
+        if ("[Locked]".equalsIgnoreCase(sign.getLine(0))) {
+            SMP.getPlugin().getLogger().info("Test");
+            if (!player.getName().equals(sign.getLine(1)) && !player.hasPermission("smp.chestlock.bypass")) {
+                player.sendMessage(ChatUtils.coloredChat(ChatUtils.PREFIX + "&cYou cannot edit this locked sign!"));
+                event.setCancelled(true);
+                return;
             }
+        }
 
-            if (blockData instanceof WallSign || blockData instanceof org.bukkit.block.data.type.Sign && isChest(getAttachedBlock(block).getType())) {
+        if (Arrays.stream(event.getLines()).anyMatch("[Lock]"::equalsIgnoreCase)) {
+            BlockData blockData = block.getBlockData();
+            if (blockData instanceof WallSign || blockData instanceof org.bukkit.block.data.type.Sign && isStorageContainer(getAttachedBlock(block).getType())) {
                 event.setLine(0, "[Locked]");
                 event.setLine(1, player.getName());
                 event.setLine(2, "");
@@ -48,7 +50,7 @@ public class ChestLockListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChestAccess(PlayerInteractEvent event) {
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && isChest(event.getClickedBlock().getType())) {
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && isStorageContainer(event.getClickedBlock().getType())) {
             Sign attachedSign = getAttachedSign(event.getClickedBlock());
             if (attachedSign != null && "[Locked]".equals(attachedSign.getLine(0))) {
                 if (!event.getPlayer().getName().equals(attachedSign.getLine(1)) && !event.getPlayer().hasPermission("smp.chestlock.bypass")) {
@@ -64,7 +66,7 @@ public class ChestLockListener implements Listener {
         Player player = event.getPlayer();
         Block block = event.getBlock();
 
-        if (isChest(block.getType())) {
+        if (isStorageContainer(block.getType())) {
             Sign attachedSign = getAttachedSign(block);
             if (attachedSign != null && "[Locked]".equals(attachedSign.getLine(0))) {
                 if (!player.getName().equals(attachedSign.getLine(1)) && !player.hasPermission("smp.chestlock.bypass")) {
@@ -74,7 +76,7 @@ public class ChestLockListener implements Listener {
             }
         } else if (block.getState() instanceof Sign sign && "[Locked]".equals(sign.getLine(0))) {
             Block attachedBlock = getAttachedBlock(block);
-            if (attachedBlock != null && isChest(attachedBlock.getType())) {
+            if (attachedBlock != null && isStorageContainer(attachedBlock.getType())) {
                 if (!player.getName().equals(sign.getLine(1)) && !player.hasPermission("smp.chestlock.bypass")) {
                     player.sendMessage(ChatUtils.coloredChat(ChatUtils.PREFIX + "&cYou cannot break a lock"));
                     event.setCancelled(true);
@@ -96,7 +98,7 @@ public class ChestLockListener implements Listener {
     }
 
     private Sign getAttachedSign(Block block) {
-        for (BlockFace face : new BlockFace[]{BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST}) {
+        for (BlockFace face : BlockFace.values()) {
             Block relative = block.getRelative(face);
             if (relative.getBlockData() instanceof WallSign) {
                 return (Sign) relative.getState();
@@ -105,7 +107,7 @@ public class ChestLockListener implements Listener {
         return null;
     }
 
-    private boolean isChest(Material material) {
-        return material == Material.CHEST || material == Material.TRAPPED_CHEST;
+    private boolean isStorageContainer(Material material) {
+        return material == Material.CHEST || material == Material.TRAPPED_CHEST || material == Material.BARREL;
     }
 }
