@@ -1,10 +1,16 @@
 package plugins.nate.smp;
 
+import org.bukkit.command.CommandSender;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import plugins.nate.smp.managers.ClaimSelectionManager;
+import plugins.nate.smp.managers.TrustManager;
+import plugins.nate.smp.utils.ChatUtils;
 import plugins.nate.smp.utils.ClaimsUtils;
 import plugins.nate.smp.utils.CommandRegistration;
 import plugins.nate.smp.utils.EventRegistration;
+
+import static plugins.nate.smp.utils.ChatUtils.coloredChat;
 
 public final class SMP extends JavaPlugin {
     private static SMP plugin;
@@ -17,6 +23,7 @@ public final class SMP extends JavaPlugin {
         this.claimSelectionManager = new ClaimSelectionManager();
 
         ClaimsUtils.createClaimsConfig();
+        TrustManager.init(this.getDataFolder());
 
         EventRegistration.registerEvents(this);
         CommandRegistration.registerCommands(this);
@@ -28,5 +35,18 @@ public final class SMP extends JavaPlugin {
 
     public ClaimSelectionManager getClaimSelectionManager() {
         return claimSelectionManager;
+    }
+
+    public static void reloadPlugin(CommandSender sender) {
+        plugin.getLogger().info("[SMP] Reloading SMP plugin...");
+        HandlerList.unregisterAll(plugin);
+
+        SMP.getPlugin().reloadConfig();
+
+        EventRegistration.registerEvents(plugin);
+        CommandRegistration.registerCommands(plugin);
+
+        sender.sendMessage(coloredChat(ChatUtils.PREFIX + "&aPlugin reloaded"));
+        plugin.getLogger().info(coloredChat("[SMP] Reloaded SMP v1.3.3"));
     }
 }

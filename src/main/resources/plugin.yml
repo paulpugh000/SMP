@@ -22,3 +22,6 @@ permissions:
   smp.chestlock.bypass:
     description: Allows bypassing of chest locks.
     default: op
+  smp.reload:
+    description: Reloads plugin
+    default: op
