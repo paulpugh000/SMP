@@ -5,7 +5,11 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
+import plugins.nate.smp.SMP;
 import plugins.nate.smp.utils.ChatUtils;
+import plugins.nate.smp.utils.CommandRegistration;
+import plugins.nate.smp.utils.EventRegistration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +37,18 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
             player.sendMessage(coloredChat("&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------"));
         } else if (args.length == 1) {
             switch (args[0].toLowerCase()) {
+                case "reload":
+                    if (sender.hasPermission("smp.reload")) {
+                        HandlerList.unregisterAll(SMP.getPlugin());
+
+                        SMP.getPlugin().reloadConfig();
+
+                        EventRegistration.registerEvents(SMP.getPlugin());
+                        CommandRegistration.registerCommands(SMP.getPlugin());
+
+                        player.sendMessage(coloredChat(ChatUtils.PREFIX + "&aPlugin reloaded"));
+                        break;
+                    }
 //                case "help":
 //                    player.sendMessage(coloredChat("&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------"));
 //                    player.sendMessage(coloredChat("&a/help &7- "));
