@@ -13,6 +13,10 @@ This is a custom solution dedicated to providing the players with a unique vanil
 
 ## Changelog
 
+### 1.3.2
+- Added /smp features command
+- Added Easy Concrete feature
+
 ### 1.3
 - Added chest locking feature
 
