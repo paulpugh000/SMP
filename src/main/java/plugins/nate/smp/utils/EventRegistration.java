@@ -3,11 +3,8 @@ package plugins.nate.smp.utils;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import plugins.nate.smp.SMP;
-import plugins.nate.smp.listeners.ChestLockListener;
+import plugins.nate.smp.listeners.*;
 import plugins.nate.smp.listeners.claims.ClaimSelectionListener;
-import plugins.nate.smp.listeners.CropReplanterListener;
-import plugins.nate.smp.listeners.PluginsCommandListener;
-import plugins.nate.smp.listeners.WitherSpawnListener;
 import plugins.nate.smp.listeners.claims.PlayerEntersClaimsListener;
 
 public class EventRegistration {
@@ -20,5 +17,6 @@ public class EventRegistration {
         pm.registerEvents(new ClaimSelectionListener(plugin.getClaimSelectionManager()), plugin);
         pm.registerEvents(new PlayerEntersClaimsListener(), plugin);
         pm.registerEvents(new ChestLockListener(), plugin);
+        pm.registerEvents(new ConcreteWaterListener(), plugin);
     }
 }
