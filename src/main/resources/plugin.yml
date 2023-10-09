@@ -17,6 +17,10 @@ commands:
 #    usage: /<command>
   smp:
     usage: /<command>
+  dev:
+    usage: /<command>
+  say:
+    usage: /<command>
 
 permissions:
   smp.chestlock.bypass:

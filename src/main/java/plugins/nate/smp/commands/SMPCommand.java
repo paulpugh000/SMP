@@ -22,7 +22,7 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
                 SMP.reloadPlugin(sender);
                 return true;
@@ -30,8 +30,6 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(coloredChat("&cOnly players can use this command!"));
             return true;
         }
-
-        Player player = (Player) sender;
 
         if (args.length == 0) {
             player.sendMessage(coloredChat("&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------"));
@@ -67,6 +65,7 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
                     player.sendMessage(coloredChat("&aCrop Replant &7- Right click crops with an empty hand to harvest and replant"));
                     player.sendMessage(coloredChat("&aEasy Concrete &7- Drop concrete powder in water to quickly get hard concrete"));
                     player.sendMessage(coloredChat("&aChest Lock &7- Add a sign to a chest with \"[lock]\" to lock your chests"));
+                    player.sendMessage(coloredChat("&aBetter Anvils &7- No more \"Too Expensive\" on anvils. Costs now capped at 30 levels"));
                     player.sendMessage(coloredChat("&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------"));
                     break;
 
