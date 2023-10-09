@@ -13,6 +13,11 @@ This is a custom solution dedicated to providing the players with a unique vanil
 
 ## Changelog
 
+### 1.3.5
+- Added AutoRestart feature
+- Removed "Too expensive" when repairing tools
+- Added dev command
+
 ### 1.3.4
 - Added trust system to allow other users to access your chests.
 - Added /smp help
