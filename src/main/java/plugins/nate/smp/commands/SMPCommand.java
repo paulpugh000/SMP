@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import plugins.nate.smp.SMP;
 import plugins.nate.smp.managers.TrustManager;
 import plugins.nate.smp.utils.ChatUtils;
+import plugins.nate.smp.utils.SMPUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,7 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
             if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
-                SMP.reloadPlugin(sender);
+                SMPUtils.reloadPlugin(sender);
                 return true;
             }
             sender.sendMessage(coloredChat("&cOnly players can use this command!"));
@@ -45,7 +46,7 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
             switch (args[0].toLowerCase()) {
                 case "reload":
                     if (player.hasPermission("smp.reload")) {
-                        SMP.reloadPlugin(player);
+                        SMPUtils.reloadPlugin(player);
                     } else {
                         player.sendMessage(coloredChat(ChatUtils.PREFIX + ChatUtils.DENIED_COMMAND));
                     }
@@ -54,6 +55,7 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
                 case "help":
                     player.sendMessage(coloredChat("&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------"));
                     player.sendMessage(coloredChat("&a/smp help &7- Displays this menu"));
+                    player.sendMessage(coloredChat("&a/smp features &7- Display the unique features of the server"));
                     player.sendMessage(coloredChat("&a/smp trust &7- Add user to your trust list"));
                     player.sendMessage(coloredChat("&a/smp untrust &7- Remove user from your trust list"));
                     player.sendMessage(coloredChat("&a/smp trustlist &7- Display your trust list"));
@@ -62,10 +64,8 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
 
                 case "features":
                     player.sendMessage(coloredChat("&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------"));
-                    player.sendMessage(coloredChat("&aCrop Replant &7- Right click crops with an empty hand to harvest and replant"));
-                    player.sendMessage(coloredChat("&aEasy Concrete &7- Drop concrete powder in water to quickly get hard concrete"));
-                    player.sendMessage(coloredChat("&aChest Lock &7- Add a sign to a chest with \"[lock]\" to lock your chests"));
-                    player.sendMessage(coloredChat("&aBetter Anvils &7- No more \"Too Expensive\" on anvils. Costs now capped at 30 levels"));
+                    player.sendMessage(coloredChat("&aCheck out the GitHub for a list of features:"));
+                    player.sendMessage(coloredChat("&7 - &ahttps://github.com/NRProjects/SMP &7-"));
                     player.sendMessage(coloredChat("&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------"));
                     break;
 

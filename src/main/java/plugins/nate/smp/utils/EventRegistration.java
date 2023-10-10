@@ -6,6 +6,8 @@ import plugins.nate.smp.SMP;
 import plugins.nate.smp.listeners.*;
 import plugins.nate.smp.listeners.claims.ClaimSelectionListener;
 import plugins.nate.smp.listeners.claims.PlayerEntersClaimsListener;
+import plugins.nate.smp.listeners.enchantments.EnchantmentListener;
+import plugins.nate.smp.listeners.enchantments.VeinMinerListener;
 
 public class EventRegistration {
     public static void registerEvents(SMP plugin) {
@@ -19,5 +21,7 @@ public class EventRegistration {
         pm.registerEvents(new ChestLockListener(), plugin);
         pm.registerEvents(new ConcreteWaterListener(), plugin);
         pm.registerEvents(new AnvilRepairCostListener(), plugin);
+        pm.registerEvents(new VeinMinerListener(), plugin);
+        pm.registerEvents(new EnchantmentListener(), plugin);
     }
 }
