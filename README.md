@@ -10,6 +10,7 @@ This is a custom solution dedicated to providing the players with a unique vanil
 - Right-click Crop Replanter
 - Wither Disabler
 - Twitch Subscriber and Discord Server Booster Ranks
+- Custom Enchants
 
 ## Changelog
 
