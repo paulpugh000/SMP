@@ -13,6 +13,9 @@ This is a custom solution dedicated to providing the players with a unique vanil
 
 ## Changelog
 
+### 1.4
+- Added custom enchantments
+
 ### 1.3.5
 - Added AutoRestart feature
 - Removed "Too expensive" when repairing tools
