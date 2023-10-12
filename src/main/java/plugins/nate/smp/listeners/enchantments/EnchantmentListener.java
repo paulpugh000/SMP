@@ -21,7 +21,7 @@ public class EnchantmentListener implements Listener {
 
         if (event.getExpLevelCost() >= 25 && isPickaxe(material)) {
             double chance = Math.random();
-            if (chance > 0.05) {
+            if (chance < 0.05) {
                 ItemMeta meta = item.getItemMeta();
 
                 List<String> lore = meta.hasLore() ? meta.getLore() : new ArrayList<>();
