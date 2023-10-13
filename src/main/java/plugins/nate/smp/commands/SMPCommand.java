@@ -44,32 +44,31 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
             player.sendMessage(coloredChat("&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------"));
         } else {
             switch (args[0].toLowerCase()) {
-                case "reload":
+                case "reload" -> {
                     if (player.hasPermission("smp.reload")) {
                         SMPUtils.reloadPlugin(player);
                     } else {
                         player.sendMessage(coloredChat(ChatUtils.PREFIX + ChatUtils.DENIED_COMMAND));
                     }
-                    break;
+                }
 
-                case "help":
+                case "help" -> {
                     player.sendMessage(coloredChat("&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------"));
                     player.sendMessage(coloredChat("&a/smp help &7- Displays this menu"));
                     player.sendMessage(coloredChat("&a/smp features &7- Display the unique features of the server"));
                     player.sendMessage(coloredChat("&a/smp trust &7- Add user to your trust list"));
                     player.sendMessage(coloredChat("&a/smp untrust &7- Remove user from your trust list"));
                     player.sendMessage(coloredChat("&a/smp trustlist &7- Display your trust list"));
-                    player.sendMessage(coloredChat("&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------"));
-                    break;
+                }
 
-                case "features":
+                case "features" -> {
                     player.sendMessage(coloredChat("&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------"));
                     player.sendMessage(coloredChat("&aCheck out the GitHub for a list of features:"));
                     player.sendMessage(coloredChat("&7 - &ahttps://github.com/NRProjects/SMP &7-"));
                     player.sendMessage(coloredChat("&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------"));
-                    break;
+                }
 
-                case "trust":
+                case "trust" -> {
                     if (args.length == 2) {
                         if (args[1].equalsIgnoreCase(player.getName())) {
                             player.sendMessage(coloredChat(ChatUtils.PREFIX + "&cYou cannot trust yourself!"));
@@ -89,9 +88,9 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
                     } else {
                         player.sendMessage(coloredChat(ChatUtils.PREFIX + "&cUsage: /smp trust <player>"));
                     }
-                    break;
+                }
 
-                case "untrust":
+                case "untrust" -> {
                     if (args.length == 2) {
                         if (args[1].equalsIgnoreCase(player.getName())) {
                             player.sendMessage(coloredChat(ChatUtils.PREFIX + "&cYou cannot untrust yourself!"));
@@ -111,19 +110,20 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
                     } else {
                         player.sendMessage(coloredChat(ChatUtils.PREFIX + "&cUsage: /smp untrust <player>"));
                     }
-                    break;
+                }
 
-                case "trustlist":
+                case "trustlist" -> {
                     Set<String> trustedPlayers = TrustManager.getTrustedPlayers(player.getName());
                     if (trustedPlayers.isEmpty()) {
                         player.sendMessage(coloredChat(ChatUtils.PREFIX + "&cYou have not trusted any players"));
                     } else {
                         player.sendMessage(coloredChat(ChatUtils.PREFIX + "&aTrusted Players: " + String.join(", ", trustedPlayers)));
                     }
-                    break;
+                }
 
-                default:
+                default -> {
                     player.sendMessage(coloredChat(ChatUtils.PREFIX + "&cUnknown command"));
+                }
             }
         }
         return true;
@@ -135,11 +135,9 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
         String argLower = args[0].toLowerCase();
 
         switch (args.length) {
-            case 1:
-                completions.addAll(SUB_COMMANDS.stream()
-                        .filter(subCommand -> subCommand.startsWith(argLower)).toList());
-                break;
-            case 2:
+            case 1 -> completions.addAll(SUB_COMMANDS.stream()
+                    .filter(subCommand -> subCommand.startsWith(argLower)).toList());
+            case 2 -> {
                 String arg1Lower = args[1].toLowerCase();
                 if ("trust".equalsIgnoreCase(argLower)) {
                     completions.addAll(getAllPlayerNames().stream()
@@ -148,7 +146,7 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
                     completions.addAll(getTrustedPlayers(sender.getName()).stream()
                             .filter(trustedPlayer -> trustedPlayer.toLowerCase().startsWith(arg1Lower)).toList());
                 }
-                break;
+            }
         }
 
         return completions;

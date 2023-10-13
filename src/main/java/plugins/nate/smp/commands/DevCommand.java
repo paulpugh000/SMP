@@ -14,7 +14,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import plugins.nate.smp.SMP;
-import plugins.nate.smp.managers.EnchantmentManager;
+import plugins.nate.smp.enchantments.SMPEnchantments;
 import plugins.nate.smp.utils.AutoRestarter;
 import plugins.nate.smp.utils.ChatUtils;
 
@@ -37,15 +37,17 @@ public class DevCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
+        ItemMeta meta;
+
         if (args.length == 0) {
             player.sendMessage(ChatUtils.DEV_PREFIX + "- Dev Commands:");
             player.sendMessage("setdurability");
             player.sendMessage("forcerestart");
             player.sendMessage("nextrestart");
             return true;
-        } else  {
+        } else {
             switch (args[0].toLowerCase()) {
-                case "setdurability":
+                case "setdurability" -> {
 
                     if (args.length == 1) {
                         player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "&cUsage: /dev setdurability <amount>"));
@@ -67,7 +69,7 @@ public class DevCommand implements CommandExecutor, TabCompleter {
                         player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "You must be holding an item with durability"));
                     }
 
-                    ItemMeta meta = item.getItemMeta();
+                    meta = item.getItemMeta();
 
                     if (meta instanceof Damageable damageable) {
                         damageable.setDamage(item.getType().getMaxDurability() - durability);
@@ -76,13 +78,11 @@ public class DevCommand implements CommandExecutor, TabCompleter {
                     } else {
                         player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "This item's durability cannot be changed."));
                     }
-                    break;
-
-                case "forcerestart":
+                }
+                case "forcerestart" -> {
                     Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "restart");
-                    break;
-
-                case "nextrestart":
+                }
+                case "nextrestart" -> {
                     long millisUntilRestart = AutoRestarter.getTimeUntilRestart();
                     long secondsUntilRestart = millisUntilRestart / 1000;
                     long minutesUntilRestart = secondsUntilRestart / 60;
@@ -91,71 +91,65 @@ public class DevCommand implements CommandExecutor, TabCompleter {
                             hoursUntilRestart,
                             minutesUntilRestart % 60,
                             secondsUntilRestart % 60)));
-                    break;
+                }
+            case "customenchant" -> {
+                if (args.length == 1) {
+                    player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "&cUsage: /dev customenchant <enchantname>"));
+                    return true;
+                }
 
-                case "customenchant":
-                    if (args.length == 1) {
-                        player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "&cUsage: /dev customenchant <enchantname>"));
-                        return true;
+                String enchantName = args[1].toLowerCase();
+
+                switch (enchantName) {
+                    case "veinminer" -> {
+                        ItemStack heldItem = player.getInventory().getItemInMainHand();
+                        if (heldItem.getType() == Material.AIR) {
+                            player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "You need to be holding an item to enchant."));
+                            return true;
+                        }
+
+                        meta = heldItem.getItemMeta();
+                        List<String> lore = new ArrayList<>();
+                        lore.add(ChatColor.GRAY + "Vein Miner");
+                        meta.setLore(lore);
+                        heldItem.setItemMeta(meta);
+
+                        heldItem.addUnsafeEnchantment(SMPEnchantments.VEIN_MINER, 1);
+                        player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "Successfully added VeinMiner enchantment to your held item!"));
                     }
-
-                    String enchantName = args[1].toLowerCase();
-
-                    switch (enchantName) {
-                        case "veinminer":
-                            ItemStack heldItem = player.getInventory().getItemInMainHand();
-                            if (heldItem == null || heldItem.getType() == Material.AIR) {
-                                player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "You need to be holding an item to enchant."));
-                                return true;
-                            }
-
-                            meta = heldItem.getItemMeta();
-                            List<String> lore = new ArrayList<>();
-                            lore.add(ChatColor.GRAY + "Vein Miner");
-                            meta.setLore(lore);
-                            heldItem.setItemMeta(meta);
-
-                            heldItem.addUnsafeEnchantment(EnchantmentManager.getVeinMinerEnchant(), 1);
-                            player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "Successfully added VeinMiner enchantment to your held item!"));
-                            break;
-                        default:
-                            player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "&cUnknown enchantment."));
-                            break;
+                    default -> {
+                        player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "&cUnknown enchantment."));
                     }
-                    break;
+                }
+        }
+        case "findenchant" -> {
+            if (args.length == 1) {
+                player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "&cUsage: /dev findenchant <enchantkey>"));
+                return true;
+            }
 
-                case "findenchant":
-                    if (args.length == 1) {
-                        player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "&cUsage: /dev findenchant <enchantkey>"));
-                        return true;
-                    }
+            String keyString = args[1].toLowerCase();
+            NamespacedKey key = NamespacedKey.fromString(keyString, SMP.getPlugin());
 
-                    String keyString = args[1].toLowerCase();
-                    NamespacedKey key = NamespacedKey.fromString(keyString, SMP.getPlugin());
+            if (key == null) {
+                player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "Key was null"));
+                return true;
+            }
 
-                    if (key == null) {
-                        player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "Key was null"));
-                        return true;
-                    }
+            Enchantment enchantment = Enchantment.getByKey(key);
 
-                    Enchantment enchantment = Enchantment.getByKey(key);
+            if (enchantment == null) {
+                player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "No enchantment found for key " + keyString));
+            } else {
+                player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "Enchantment: " + enchantment.getName()));
+            }
 
-                    if (enchantment == null) {
-                        player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "No enchantment found for key " + keyString));
-                    } else {
-                        player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "Enchantment: " + enchantment.getName()));
-                    }
-
-
-
-
-                    break;
-
-                default:
+        }
+                default -> {
                     player.sendMessage(ChatUtils.DEV_PREFIX + "&cUnknown sub-command.");
+                }
             }
         }
-
         return true;
     }
 
