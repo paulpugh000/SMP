@@ -1,6 +1,7 @@
 package plugins.nate.smp.listeners;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
@@ -13,12 +14,15 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.persistence.PersistentDataType;
+import plugins.nate.smp.SMP;
 import plugins.nate.smp.managers.TrustManager;
 import plugins.nate.smp.utils.ChatUtils;
 
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.UUID;
 
 import static plugins.nate.smp.utils.ChatUtils.coloredChat;
 
@@ -26,6 +30,7 @@ public class ChestLockListener implements Listener {
     private static final String LOCKED_TAG = "[Locked]";
     private static final Set<BlockFace> FACES_TO_CHECK = EnumSet.of(BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.WEST, BlockFace.EAST);
     private static final Set<Material> STORAGE_CONTAINERS = EnumSet.of(Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
+    private static final NamespacedKey OWNER_UUID_KEY = new NamespacedKey(SMP.getPlugin(), "ownerUUID");
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onSignChange(SignChangeEvent event) {
@@ -45,6 +50,9 @@ public class ChestLockListener implements Listener {
             event.setLine(2, "");
             event.setLine(3, "");
             player.sendMessage(coloredChat(ChatUtils.PREFIX + "&aChest locked"));
+
+            sign.getPersistentDataContainer().set(OWNER_UUID_KEY, PersistentDataType.STRING, player.getUniqueId().toString());
+            sign.update();
         }
     }
 
@@ -125,13 +133,17 @@ public class ChestLockListener implements Listener {
             return true;
         }
 
-        String chestOwner = attachedSign.getLine(1);
-        Set<String> trustedPlayers = TrustManager.getTrustedPlayers(chestOwner);
-        return player.getName().equals(chestOwner) || trustedPlayers.contains(player.getName());
+        String ownerUUIDString = attachedSign.getPersistentDataContainer().get(OWNER_UUID_KEY, PersistentDataType.STRING);
+        UUID ownerUUID = UUID.fromString(ownerUUIDString);
+
+        Set<UUID> trustedPlayersUUID = TrustManager.getTrustedPlayers(ownerUUID);
+        return player.getUniqueId().equals(ownerUUID) || trustedPlayersUUID.contains(player.getUniqueId());
     }
 
     private boolean isPlayerOwner(Player player, Sign attachedSign) {
-        return player.getName().equals(attachedSign.getLine(1));
+        String ownerUUIDString = attachedSign.getPersistentDataContainer().get(OWNER_UUID_KEY, PersistentDataType.STRING);
+        UUID ownerUUID = UUID.fromString(ownerUUIDString);
+        return player.getUniqueId().equals(ownerUUID);
     }
 
     private boolean isPlayerBypassing(Player player) {

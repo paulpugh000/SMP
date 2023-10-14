@@ -14,6 +14,7 @@ import plugins.nate.smp.utils.SMPUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static plugins.nate.smp.utils.ChatUtils.coloredChat;
@@ -113,11 +114,14 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
                 }
 
                 case "trustlist" -> {
-                    Set<String> trustedPlayers = TrustManager.getTrustedPlayers(player.getName());
+                    Set<UUID> trustedPlayers = TrustManager.getTrustedPlayers(player.getUniqueId());
                     if (trustedPlayers.isEmpty()) {
                         player.sendMessage(coloredChat(ChatUtils.PREFIX + "&cYou have not trusted any players"));
                     } else {
-                        player.sendMessage(coloredChat(ChatUtils.PREFIX + "&aTrusted Players: " + String.join(", ", trustedPlayers)));
+                        Set<String> trustedPlayerNames = trustedPlayers.stream()
+                                .map(uuid -> Bukkit.getOfflinePlayer(uuid).getName())
+                                .collect(Collectors.toSet());
+                        player.sendMessage(coloredChat(ChatUtils.PREFIX + "&aTrusted Players: " + String.join(", ", trustedPlayerNames)));
                     }
                 }
 
@@ -134,17 +138,21 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
         List<String> completions = new ArrayList<>();
         String argLower = args[0].toLowerCase();
 
+        if (!(sender instanceof Player)) return completions;
+
+        Player player = (Player) sender;
+
         switch (args.length) {
             case 1 -> completions.addAll(SUB_COMMANDS.stream()
                     .filter(subCommand -> subCommand.startsWith(argLower)).toList());
             case 2 -> {
                 String arg1Lower = args[1].toLowerCase();
                 if ("trust".equalsIgnoreCase(argLower)) {
-                    completions.addAll(getAllPlayerNames().stream()
+                    completions.addAll(getAllOnlinePlayerNames().stream()
                             .filter(playerName -> playerName.toLowerCase().startsWith(arg1Lower)).toList());
                 } else if ("untrust".equalsIgnoreCase(argLower)) {
-                    completions.addAll(getTrustedPlayers(sender.getName()).stream()
-                            .filter(trustedPlayer -> trustedPlayer.toLowerCase().startsWith(arg1Lower)).toList());
+                    completions.addAll(TrustManager.getTrustedPlayerNames(player.getUniqueId()).stream()
+                            .filter(trustedPlayerName -> trustedPlayerName.toLowerCase().startsWith(arg1Lower)).toList());
                 }
             }
         }
@@ -152,11 +160,9 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
         return completions;
     }
 
-    private List<String> getAllPlayerNames() {
-        return Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList());
-    }
-
-    private List<String> getTrustedPlayers(String owner) {
-        return new ArrayList<>(TrustManager.getTrustedPlayers(owner));
+    private List<String> getAllOnlinePlayerNames() {
+        return Bukkit.getOnlinePlayers().stream()
+                .map(Player::getName)
+                .collect(Collectors.toList());
     }
 }
