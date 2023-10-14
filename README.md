@@ -14,6 +14,10 @@ This is a custom solution dedicated to providing the players with a unique vanil
 
 ## Changelog
 
+### 1.4.1
+- Tied chest locks to UUIDs instead of usernames
+- Added support for custom enchantments to books
+
 ### 1.4
 - Added custom enchantments
 
