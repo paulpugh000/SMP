@@ -1,5 +1,6 @@
 package plugins.nate.smp.listeners.enchantments;
 
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -14,6 +15,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import plugins.nate.smp.managers.EnchantmentManager;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class VeinMinerListener implements Listener {
     private static final BlockFace[] ADJACENT_BLOCK_FACES = {
@@ -25,7 +27,6 @@ public class VeinMinerListener implements Listener {
             BlockFace.SOUTH_SOUTH_WEST, BlockFace.WEST_SOUTH_WEST
     };
 
-    private final int MAX_BLOCKS = 128;
     private static final EnumSet<Material> ACCEPTABLE_BLOCKS = EnumSet.of(
             Material.IRON_ORE,
             Material.COAL_ORE,
@@ -52,19 +53,15 @@ public class VeinMinerListener implements Listener {
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
-        Block block = event.getBlock();
-
-        if (!player.isSneaking()) {
-            return;
-        }
-
         ItemStack tool = player.getInventory().getItemInMainHand();
-        if (tool.getEnchantments().containsKey(EnchantmentManager.getVeinMinerEnchant())) {
-            Material material = block.getType();
-            if (ACCEPTABLE_BLOCKS.contains(material)) {
-                Set<Block> blocksToBreak = collectBlocks(block, material);
-                breakBlocks(player, tool, blocksToBreak);
-            }
+
+        if (player.getGameMode() != GameMode.CREATIVE &&
+                player.isSneaking() &&
+                tool.getEnchantments().containsKey(EnchantmentManager.getEnchantment("vein_miner")) &&
+                ACCEPTABLE_BLOCKS.contains(event.getBlock().getType())) {
+
+            Set<Block> blocksToBreak = collectBlocks(event.getBlock(), event.getBlock().getType());
+            breakBlocks(player, tool, blocksToBreak);
         }
     }
 
@@ -73,6 +70,7 @@ public class VeinMinerListener implements Listener {
         Set<Block> collectedBlocks = new HashSet<>();
         blocksToCheck.add(start);
 
+        int MAX_BLOCKS = 128;
         while(!blocksToCheck.isEmpty() && collectedBlocks.size() < MAX_BLOCKS) {
             Block current = blocksToCheck.poll();
             collectedBlocks.add(current);
@@ -86,11 +84,9 @@ public class VeinMinerListener implements Listener {
     }
 
     private Set<Block> getAdjacentBlocks(Block center) {
-        Set<Block> blocks = new HashSet<>();
-        for (BlockFace face : ADJACENT_BLOCK_FACES) {
-            blocks.add(center.getRelative(face));
-        }
-        return blocks;
+        return Arrays.stream(ADJACENT_BLOCK_FACES)
+                .map(center::getRelative)
+                .collect(Collectors.toSet());
     }
 
     private void breakBlocks(Player player, ItemStack tool, Set<Block> blocks) {
@@ -101,23 +97,20 @@ public class VeinMinerListener implements Listener {
 
         int unbreakingLevel = tool.getEnchantmentLevel(Enchantment.DURABILITY);
 
-        for (Block block : blocks) {
+        blocks.forEach(block -> {
             float chance = RANDOM.nextFloat();
             if (chance >= ((float) unbreakingLevel / (unbreakingLevel + 1))) {
                 int damage = damageable.getDamage() + 1;
-                if (damage >= tool.getType().getMaxDurability()) {
-                    player.getInventory().setItemInMainHand(null);
-                    break;
-                } else {
+                if (damage < tool.getType().getMaxDurability()) {
                     damageable.setDamage(damage);
                     tool.setItemMeta(damageable);
                     player.getInventory().setItemInMainHand(tool);
-
+                } else {
+                    player.getInventory().setItemInMainHand(null);
+                    return;
                 }
-
             }
-
             block.breakNaturally();
-        }
+        });
     }
 }

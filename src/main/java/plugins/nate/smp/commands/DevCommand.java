@@ -1,7 +1,6 @@
 package plugins.nate.smp.commands;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
@@ -14,7 +13,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import plugins.nate.smp.SMP;
-import plugins.nate.smp.enchantments.SMPEnchantments;
+import plugins.nate.smp.enchantments.CustomEnchant;
+import plugins.nate.smp.managers.EnchantmentManager;
 import plugins.nate.smp.utils.AutoRestarter;
 import plugins.nate.smp.utils.ChatUtils;
 
@@ -99,29 +99,36 @@ public class DevCommand implements CommandExecutor, TabCompleter {
                 }
 
                 String enchantName = args[1].toLowerCase();
+                Enchantment enchantment = EnchantmentManager.getEnchantment(enchantName);
 
-                switch (enchantName) {
-                    case "veinminer" -> {
-                        ItemStack heldItem = player.getInventory().getItemInMainHand();
-                        if (heldItem.getType() == Material.AIR) {
-                            player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "You need to be holding an item to enchant."));
-                            return true;
-                        }
-
-                        meta = heldItem.getItemMeta();
-                        List<String> lore = new ArrayList<>();
-                        lore.add(ChatColor.GRAY + "Vein Miner");
-                        meta.setLore(lore);
-                        heldItem.setItemMeta(meta);
-
-                        heldItem.addUnsafeEnchantment(SMPEnchantments.VEIN_MINER, 1);
-                        player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "Successfully added VeinMiner enchantment to your held item!"));
-                    }
-                    default -> {
-                        player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "&cUnknown enchantment."));
-                    }
+                if (!(enchantment instanceof CustomEnchant)) {
+                    player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "&cUnknown enchantment."));
+                    return true;
                 }
-        }
+
+                ItemStack heldItem = player.getInventory().getItemInMainHand();
+
+                if (heldItem.getType() == Material.AIR) {
+                    player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "You need to be holding an item to enchant."));
+                    return true;
+                }
+
+                if (!enchantment.canEnchantItem(heldItem)) {
+                    player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "&cThis item cannot be enchanted with the given enchantment."));
+                    return true;
+                }
+
+                meta = heldItem.getItemMeta();
+
+                List<String> lore = meta.hasLore() ? meta.getLore() : new ArrayList<>();
+                lore.add(((CustomEnchant) enchantment).getLore());
+                meta.setLore(lore);
+
+                heldItem.setItemMeta(meta);
+                heldItem.addUnsafeEnchantment(enchantment, 1);
+
+                player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "Successfully added " + enchantName + " enchantment to your held item!"));
+            }
         case "findenchant" -> {
             if (args.length == 1) {
                 player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "&cUsage: /dev findenchant <enchantkey>"));
