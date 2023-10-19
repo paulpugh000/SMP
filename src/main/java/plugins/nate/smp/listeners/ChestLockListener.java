@@ -27,7 +27,7 @@ import java.util.UUID;
 import static plugins.nate.smp.utils.ChatUtils.coloredChat;
 
 public class ChestLockListener implements Listener {
-    private static final String LOCKED_TAG = "[Locked]";
+    private static final String LOCKED_TAG = "[LockedV2]";
     private static final Set<BlockFace> FACES_TO_CHECK = EnumSet.of(BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.WEST, BlockFace.EAST);
     private static final Set<Material> STORAGE_CONTAINERS = EnumSet.of(Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
     private static final NamespacedKey OWNER_UUID_KEY = new NamespacedKey(SMP.getPlugin(), "ownerUUID");
