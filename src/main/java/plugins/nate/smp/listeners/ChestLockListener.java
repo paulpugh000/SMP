@@ -118,13 +118,13 @@ public class ChestLockListener implements Listener {
     }
 
     private Block getOtherHalfOfChest(Block block) {
-        if (!(block.getState() instanceof DoubleChest)) {
+        if (block.getType() != Material.CHEST && block.getType() != Material.TRAPPED_CHEST) {
             return null;
         }
 
         return Arrays.stream(CARDINAL_FACES)
                 .map(block::getRelative)
-                .filter(otherBlock -> otherBlock.getType() == Material.CHEST)
+                .filter(adjacentBlock -> adjacentBlock.getType() == block.getType())
                 .findFirst()
                 .orElse(null);
     }
@@ -133,7 +133,8 @@ public class ChestLockListener implements Listener {
         return Arrays.stream(CARDINAL_FACES)
                 .map(block::getRelative)
                 .filter(otherBlock -> otherBlock.getBlockData() instanceof WallSign)
-                .map(otherBlock -> (Sign) otherBlock)
+                .filter(otherBlock -> otherBlock.getState() instanceof Sign)
+                .map(otherBlock -> (Sign) otherBlock.getState())
                 .findFirst()
                 .orElse(null);
     }
