@@ -39,9 +39,9 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
             player.sendMessage(coloredChat("&aand private plugins to give the best experience possible."));
             player.sendMessage(coloredChat("&aThe SMP plugin is main driver of this server and is meant to"));
             player.sendMessage(coloredChat("&aprovide a vanilla-esque experience. With additions in and out"));
-            player.sendMessage(coloredChat("&aof game, including QoL additions and discord integration. "));
+            player.sendMessage(coloredChat("&aof game, including QoL additions and Discord integration. "));
             player.sendMessage(coloredChat("&aIf you have any feature requests or issues contact staff"));
-            player.sendMessage(coloredChat("&aon our discord. Thank you and have fun!"));
+            player.sendMessage(coloredChat("&aon our Discord. Thank you and have fun!"));
             player.sendMessage(coloredChat("&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------"));
         } else {
             switch (args[0].toLowerCase()) {
