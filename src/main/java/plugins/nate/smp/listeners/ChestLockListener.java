@@ -2,9 +2,7 @@ package plugins.nate.smp.listeners;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.Sign;
+import org.bukkit.block.*;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
@@ -19,18 +17,17 @@ import plugins.nate.smp.SMP;
 import plugins.nate.smp.managers.TrustManager;
 import plugins.nate.smp.utils.ChatUtils;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static plugins.nate.smp.utils.ChatUtils.coloredChat;
 
 public class ChestLockListener implements Listener {
     private static final String LOCKED_TAG = "[LockedV2]";
-    private static final Set<BlockFace> FACES_TO_CHECK = EnumSet.of(BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.WEST, BlockFace.EAST);
+    private static final BlockFace[] CARDINAL_FACES = { BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
+    private static final BlockFace[] FACES_TO_CHECK = { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
     private static final Set<Material> STORAGE_CONTAINERS = EnumSet.of(Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
     private static final NamespacedKey OWNER_UUID_KEY = new NamespacedKey(SMP.getPlugin(), "ownerUUID");
+
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onSignChange(SignChangeEvent event) {
@@ -80,7 +77,9 @@ public class ChestLockListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onHopperPlace(BlockPlaceEvent event) {
-        if (event.getBlockPlaced().getType() != Material.HOPPER) return;
+        if (event.getBlockPlaced().getType() != Material.HOPPER) {
+            return;
+        }
 
         Player player = event.getPlayer();
         for (BlockFace face : FACES_TO_CHECK) {
@@ -108,8 +107,8 @@ public class ChestLockListener implements Listener {
 
     private void sendMessageAndCancel(Event event, Player player, String message) {
         player.sendMessage(coloredChat(ChatUtils.PREFIX + message));
-        if (event instanceof Cancellable) {
-            ((Cancellable) event).setCancelled(true);
+        if (event instanceof Cancellable c) {
+            c.setCancelled(true);
         }
     }
 
@@ -118,13 +117,38 @@ public class ChestLockListener implements Listener {
         return blockData instanceof WallSign ? block.getRelative(((WallSign) blockData).getFacing().getOppositeFace()) : block.getRelative(BlockFace.DOWN);
     }
 
-    private Sign getAttachedSign(Block block) {
-        for (BlockFace face : BlockFace.values()) {
-            Block relative = block.getRelative(face);
-            if (relative.getBlockData() instanceof WallSign) {
-                return (Sign) relative.getState();
-            }
+    private Block getOtherHalfOfChest(Block block) {
+        if (!(block.getState() instanceof DoubleChest)) {
+            return null;
         }
+
+        return Arrays.stream(CARDINAL_FACES)
+                .map(block::getRelative)
+                .filter(otherBlock -> otherBlock.getType() == Material.CHEST)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private Sign scanForAttachedSign(Block block) {
+        return Arrays.stream(CARDINAL_FACES)
+                .map(block::getRelative)
+                .filter(otherBlock -> otherBlock.getBlockData() instanceof WallSign)
+                .map(otherBlock -> (Sign) otherBlock)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private Sign getAttachedSign(Block block) {
+        Sign foundSign = scanForAttachedSign(block);
+        if (foundSign != null) {
+            return foundSign;
+        }
+
+        Block otherHalf = getOtherHalfOfChest(block);
+        if (otherHalf != null) {
+            return scanForAttachedSign(otherHalf);
+        }
+
         return null;
     }
 
