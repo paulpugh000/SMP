@@ -9,7 +9,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
+import plugins.nate.smp.SMP;
 import plugins.nate.smp.managers.EnchantmentManager;
+import plugins.nate.smp.utils.ChatUtils;
 import plugins.nate.smp.utils.SMPUtils;
 
 import java.util.*;
@@ -42,13 +44,17 @@ public class TimberListener implements Listener {
         Material type = block.getType();
 
         if (isLog(type)) {
+
+
             if (isPlayerPlaced(block)) {
+                player.sendMessage(ChatUtils.coloredChat(ChatUtils.PREFIX + "&cYou cannot use Timber on player placed blocks!"));
                 return;
             }
 
             List<ItemStack> drops = new ArrayList<>();
             AtomicInteger blocksDestroyed = new AtomicInteger(0);
-            destroyTree(block, drops, blocksDestroyed);
+            Set<Block> checkedBlocks = new HashSet<>();
+            destroyTree(block, drops, blocksDestroyed, checkedBlocks, player);
 
             Map<Material, Integer> consolidatedDrops = drops.stream()
                     .collect(Collectors.groupingBy(ItemStack::getType, Collectors.summingInt(ItemStack::getAmount)));
@@ -60,11 +66,11 @@ public class TimberListener implements Listener {
     }
 
     private boolean isPlayerPlaced(Block block) {
-        CoreProtectAPI coreProtect = SMPUtils.getCoreProtect();
+        CoreProtectAPI coreProtect = SMPUtils.loadCoreProtect();
 
         if (coreProtect == null) return false;
 
-        List<String[]> lookup = coreProtect.blockLookup(block, Integer.MAX_VALUE);
+        List<String[]> lookup = coreProtect.blockLookup(block, 6*30*24*60*60);
         return lookup != null && lookup.stream().anyMatch(data -> data != null && data.length > 0);
     }
 
@@ -72,10 +78,14 @@ public class TimberListener implements Listener {
         return type.name().contains("LOG") || type.name().contains("WOOD");
     }
 
-    private void destroyTree(Block block, List<ItemStack> drops, AtomicInteger blocksDestroyed) {
-        if (blocksDestroyed.get() >= MAX_BLOCKS || !isLog(block.getType()) || block.getType() == Material.AIR) {
+    private void destroyTree(Block block, List<ItemStack> drops, AtomicInteger blocksDestroyed, Set<Block> checkedBlocks, Player player) {
+        if (blocksDestroyed.get() >= MAX_BLOCKS || !isLog(block.getType()) || block.getType() == Material.AIR || checkedBlocks.contains(block)) {
             return;
         }
+
+        checkedBlocks.add(block);
+
+        addCoreProtectLog(block, player);
 
         drops.addAll(block.getDrops());
         block.setType(Material.AIR);
@@ -85,10 +95,17 @@ public class TimberListener implements Listener {
             for (int y = -1; y <= 1; y++) {
                 for (int z = -1; z <= 1; z++) {
                     if (x != 0 || y != 0 || z != 0) {
-                        destroyTree(block.getRelative(x, y, z), drops, blocksDestroyed);
+                        destroyTree(block.getRelative(x, y, z), drops, blocksDestroyed, checkedBlocks, player);
                     }
                 }
             }
+        }
+    }
+
+    private void addCoreProtectLog(Block block, Player player) {
+        boolean success = SMP.getCoreProtect().logRemoval(player.getName(), block.getLocation(), block.getType(), block.getBlockData());
+        if (!success) {
+            SMPUtils.log("Failed to log block removal with CoreProtect!");
         }
     }
 }

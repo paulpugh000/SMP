@@ -25,7 +25,7 @@ public class SMPUtils {
         SMP.getPlugin().getLogger().info(coloredChat("[SMP] Reloaded SMP v1.3.5"));
     }
 
-    public static CoreProtectAPI getCoreProtect() {
+    public static CoreProtectAPI loadCoreProtect() {
         Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("CoreProtect");
         if (!(plugin instanceof CoreProtect)) {
             return null;

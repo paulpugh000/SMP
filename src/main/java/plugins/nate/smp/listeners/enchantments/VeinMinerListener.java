@@ -12,7 +12,9 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
+import plugins.nate.smp.SMP;
 import plugins.nate.smp.managers.EnchantmentManager;
+import plugins.nate.smp.utils.SMPUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -98,6 +100,8 @@ public class VeinMinerListener implements Listener {
         int unbreakingLevel = tool.getEnchantmentLevel(Enchantment.DURABILITY);
 
         blocks.forEach(block -> {
+            addCoreProtectLog(block, player);
+
             float chance = RANDOM.nextFloat();
             if (chance >= ((float) unbreakingLevel / (unbreakingLevel + 1))) {
                 int damage = damageable.getDamage() + 1;
@@ -112,5 +116,12 @@ public class VeinMinerListener implements Listener {
             }
             block.breakNaturally();
         });
+    }
+
+    private void addCoreProtectLog(Block block, Player player) {
+        boolean success = SMP.getCoreProtect().logRemoval(player.getName(), block.getLocation(), block.getType(), block.getBlockData());
+        if (!success) {
+            SMPUtils.log("Failed to log block removal with CoreProtect!");
+        }
     }
 }
