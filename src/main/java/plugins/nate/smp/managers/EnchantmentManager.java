@@ -12,17 +12,18 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import plugins.nate.smp.enchantments.CustomEnchant;
+import plugins.nate.smp.enchantments.TimberEnchant;
 import plugins.nate.smp.enchantments.VeinMinerEnchant;
-import plugins.nate.smp.utils.SMPUtils;
 
 import java.lang.reflect.Field;
 import java.util.*;
 
 public class EnchantmentManager implements Listener {
-    private static final Map<String, Enchantment> ENCHANTMENTS = new HashMap<>();
+    public static final Map<String, Enchantment> ENCHANTMENTS = new HashMap<>();
 
     static {
         ENCHANTMENTS.put("vein_miner", new VeinMinerEnchant());
+        ENCHANTMENTS.put("timber", new TimberEnchant());
     }
 
     public static void registerEnchantment(String key) {
@@ -90,32 +91,34 @@ public class EnchantmentManager implements Listener {
             return;
         }
 
-        if (SMPUtils.isPickaxe(firstItem.getType()) && secondItem.getType() == Material.ENCHANTED_BOOK) {
+        if (secondItem.getType() == Material.ENCHANTED_BOOK) {
             EnchantmentStorageMeta bookMeta = (EnchantmentStorageMeta) secondItem.getItemMeta();
 
             ENCHANTMENTS.values().stream()
                     .filter(enchantment -> enchantment instanceof CustomEnchant)
+                    .filter(enchantment -> enchantment.canEnchantItem(firstItem))
                     .filter(bookMeta::hasStoredEnchant)
                     .findFirst()
                     .ifPresent(enchantment -> {
-                        ItemMeta pickaxeMeta = firstItem.getItemMeta();
+                        ItemMeta toolMeta = firstItem.getItemMeta();
 
-                        String enchantLore = ChatColor.GOLD + "Vein Miner";
-                        if (pickaxeMeta.hasLore() && pickaxeMeta.getLore().contains(enchantLore)) {
+                        String enchantLore = ((CustomEnchant) enchantment).getLore();
+
+                        if (toolMeta.hasLore() && toolMeta.getLore().contains(enchantLore)) {
                             return;
                         }
 
-                        ItemStack resultPickaxe = firstItem.clone();
-                        ItemMeta resultMeta = resultPickaxe.getItemMeta();
+                        ItemStack resultItem = firstItem.clone();
+                        ItemMeta resultMeta = resultItem.getItemMeta();
 
                         List<String> lore = resultMeta.hasLore() ? resultMeta.getLore() : new ArrayList<>();
                         lore.add(enchantLore);
                         resultMeta.setLore(lore);
 
-                        resultPickaxe.setItemMeta(resultMeta);
-                        resultPickaxe.addUnsafeEnchantment(enchantment, 1);
+                        resultItem.setItemMeta(resultMeta);
+                        resultItem.addUnsafeEnchantment(enchantment, 1);
 
-                        event.setResult(resultPickaxe);
+                        event.setResult(resultItem);
                     });
         }
     }

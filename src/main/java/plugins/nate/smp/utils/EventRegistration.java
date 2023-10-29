@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import plugins.nate.smp.SMP;
 import plugins.nate.smp.listeners.*;
+import plugins.nate.smp.listeners.enchantments.TimberListener;
 import plugins.nate.smp.listeners.enchantments.VeinMinerListener;
 import plugins.nate.smp.managers.EnchantmentManager;
 
@@ -19,5 +20,6 @@ public class EventRegistration {
         pm.registerEvents(new AnvilRepairCostListener(), plugin);
         pm.registerEvents(new VeinMinerListener(), plugin);
         pm.registerEvents(new EnchantmentManager(), plugin);
+        pm.registerEvents(new TimberListener(), plugin);
     }
 }

@@ -8,15 +8,15 @@ import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.inventory.ItemStack;
 import plugins.nate.smp.utils.SMPUtils;
 
-public class VeinMinerEnchant extends Enchantment implements CustomEnchant {
+public class TimberEnchant extends Enchantment implements CustomEnchant {
 
-    public VeinMinerEnchant() {
-        super(NamespacedKey.minecraft("vein_miner"));
+    public TimberEnchant() {
+        super(NamespacedKey.minecraft("timber"));
     }
 
     @Override
     public String getName() {
-        return "Vein Miner";
+        return "Timber";
     }
 
     @Override
@@ -49,16 +49,18 @@ public class VeinMinerEnchant extends Enchantment implements CustomEnchant {
         return false;
     }
 
+    @Override
+    public boolean canEnchantItem(ItemStack item) {
+        return SMPUtils.isAxe(item.getType()) || item.getType() == Material.BOOK;
+    }
+
+    @Override
     public double getChance() {
         return 1.0;
     }
 
-    public String getLore() {
-        return ChatColor.GOLD + "Vein Miner";
-    }
-
     @Override
-    public boolean canEnchantItem(ItemStack item) {
-        return SMPUtils.isPickaxe(item.getType()) || item.getType() == Material.BOOK;
+    public String getLore() {
+        return ChatColor.GOLD + "Timber";
     }
 }
