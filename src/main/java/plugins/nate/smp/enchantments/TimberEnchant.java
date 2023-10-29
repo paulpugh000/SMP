@@ -56,7 +56,7 @@ public class TimberEnchant extends Enchantment implements CustomEnchant {
 
     @Override
     public double getChance() {
-        return 1.0;
+        return 0.05;
     }
 
     @Override

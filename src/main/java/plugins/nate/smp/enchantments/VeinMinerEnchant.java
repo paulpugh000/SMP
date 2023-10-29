@@ -50,7 +50,7 @@ public class VeinMinerEnchant extends Enchantment implements CustomEnchant {
     }
 
     public double getChance() {
-        return 1.0;
+        return 0.05;
     }
 
     public String getLore() {
