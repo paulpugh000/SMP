@@ -1,9 +1,9 @@
 package plugins.nate.smp.listeners.enchantments;
 
 import net.coreprotect.CoreProtectAPI;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -12,12 +12,15 @@ import org.bukkit.inventory.ItemStack;
 import plugins.nate.smp.managers.EnchantmentManager;
 import plugins.nate.smp.utils.SMPUtils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 
 public class TimberListener implements Listener {
+    private static final int MAX_BLOCKS = 192;
+
+
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
@@ -31,6 +34,10 @@ public class TimberListener implements Listener {
             return;
         }
 
+        if (!(player.getGameMode() == GameMode.SURVIVAL)) {
+            return;
+        }
+
         Block block = event.getBlock();
         Material type = block.getType();
 
@@ -39,34 +46,49 @@ public class TimberListener implements Listener {
                 return;
             }
 
-            destroyLogs(block);
+            List<ItemStack> drops = new ArrayList<>();
+            AtomicInteger blocksDestroyed = new AtomicInteger(0);
+            destroyTree(block, drops, blocksDestroyed);
+
+            Map<Material, Integer> consolidatedDrops = drops.stream()
+                    .collect(Collectors.groupingBy(ItemStack::getType, Collectors.summingInt(ItemStack::getAmount)));
+
+            consolidatedDrops.forEach((material, amount) -> {
+                player.getWorld().dropItemNaturally(player.getLocation(), new ItemStack(material, amount));
+            });
         }
     }
 
     private boolean isPlayerPlaced(Block block) {
         CoreProtectAPI coreProtect = SMPUtils.getCoreProtect();
 
-        return coreProtect != null && Optional.ofNullable(coreProtect.blockLookup(block, Integer.MAX_VALUE))
-                .map(lookup -> lookup.stream().anyMatch(data -> data != null && data.length > 0))
-                .orElse(false);
+        if (coreProtect == null) return false;
+
+        List<String[]> lookup = coreProtect.blockLookup(block, Integer.MAX_VALUE);
+        return lookup != null && lookup.stream().anyMatch(data -> data != null && data.length > 0);
     }
 
     private boolean isLog(Material type) {
         return type.name().contains("LOG") || type.name().contains("WOOD");
     }
 
-    private void destroyLogs(Block block) {
-        Block current = block.getRelative(BlockFace.UP);
-        while (isLog(current.getType())) {
-            current.breakNaturally();
-            current = current.getRelative(BlockFace.UP);
+    private void destroyTree(Block block, List<ItemStack> drops, AtomicInteger blocksDestroyed) {
+        if (blocksDestroyed.get() >= MAX_BLOCKS || !isLog(block.getType()) || block.getType() == Material.AIR) {
+            return;
         }
 
-        current = block.getRelative(BlockFace.DOWN);
-        while (isLog(current.getType())) {
-            current.breakNaturally();
-            current = current.getRelative(BlockFace.DOWN);
+        drops.addAll(block.getDrops());
+        block.setType(Material.AIR);
+        blocksDestroyed.incrementAndGet();
+
+        for (int x = -1; x <= 1; x++) {
+            for (int y = -1; y <= 1; y++) {
+                for (int z = -1; z <= 1; z++) {
+                    if (x != 0 || y != 0 || z != 0) {
+                        destroyTree(block.getRelative(x, y, z), drops, blocksDestroyed);
+                    }
+                }
+            }
         }
     }
-
 }
