@@ -14,6 +14,11 @@ This is a custom solution dedicated to providing the players with a unique vanil
 
 ## Changelog
 
+### 1.4.3
+- Added Timber enchant to axes
+- Enabled wither spawning
+- Added CoreProtect logging to VeinMiner and Timber enchantments
+
 ### 1.4.1
 - Fixed chest lock exploit
 
