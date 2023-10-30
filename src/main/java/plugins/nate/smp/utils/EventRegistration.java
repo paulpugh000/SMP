@@ -1,6 +1,7 @@
 package plugins.nate.smp.utils;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Wither;
 import org.bukkit.plugin.PluginManager;
 import plugins.nate.smp.SMP;
 import plugins.nate.smp.listeners.*;
@@ -18,6 +19,7 @@ public class EventRegistration {
         pm.registerEvents(new ChestLockListener(), plugin);
         pm.registerEvents(new ConcreteWaterListener(), plugin);
         pm.registerEvents(new AnvilRepairCostListener(), plugin);
+        pm.registerEvents(new WitherProofingListener(), plugin);
         pm.registerEvents(new VeinMinerListener(), plugin);
         pm.registerEvents(new EnchantmentManager(), plugin);
         pm.registerEvents(new TimberListener(), plugin);
