@@ -14,7 +14,6 @@ public class EventRegistration {
 
         pm.registerEvents(new CropReplanterListener(), plugin);
         pm.registerEvents(new PluginsCommandListener(), plugin);
-//        pm.registerEvents(new WitherSpawnListener(), plugin);
         pm.registerEvents(new ChestLockListener(), plugin);
         pm.registerEvents(new ConcreteWaterListener(), plugin);
         pm.registerEvents(new AnvilRepairCostListener(), plugin);
