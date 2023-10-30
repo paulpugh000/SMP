@@ -8,11 +8,13 @@ This is a custom solution dedicated to providing the players with a unique vanil
 
 - Chest Lock
 - Right-click Crop Replanter
-- Wither Disabler
 - Twitch Subscriber and Discord Server Booster Ranks
 - Custom Enchants
 
 ## Changelog
+
+### 1.5
+- Added dragon egg respawning
 
 ### 1.4.3
 - Added Timber enchant to axes
