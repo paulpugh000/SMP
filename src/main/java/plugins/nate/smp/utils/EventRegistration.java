@@ -19,6 +19,7 @@ public class EventRegistration {
         pm.registerEvents(new ConcreteWaterListener(), plugin);
         pm.registerEvents(new AnvilRepairCostListener(), plugin);
         pm.registerEvents(new WitherExplosionListener(), plugin);
+        pm.registerEvents(new DragonEggRespawnListener(), plugin);
         pm.registerEvents(new VeinMinerListener(), plugin);
         pm.registerEvents(new EnchantmentManager(), plugin);
         pm.registerEvents(new TimberListener(), plugin);
