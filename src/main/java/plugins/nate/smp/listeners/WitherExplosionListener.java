@@ -1,6 +1,5 @@
 package plugins.nate.smp.listeners;
 
-import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;

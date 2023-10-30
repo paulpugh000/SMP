@@ -20,27 +20,30 @@ import static plugins.nate.smp.utils.ChatUtils.coloredChat;
 
 public class SMPUtils {
     public static void reloadPlugin(CommandSender sender) {
-        SMP.getPlugin().getLogger().info("[SMP] Reloading SMP plugin...");
-        HandlerList.unregisterAll(SMP.getPlugin());
+        SMP smp = SMP.getPlugin();
+        smp.getLogger().info("[SMP] Reloading SMP plugin...");
+        HandlerList.unregisterAll(smp);
 
-        SMP.getPlugin().reloadConfig();
+        smp.reloadConfig();
 
-        EventRegistration.registerEvents(SMP.getPlugin());
-        CommandRegistration.registerCommands(SMP.getPlugin());
+        EventRegistration.registerEvents(smp);
+        CommandRegistration.registerCommands(smp);
 
         sender.sendMessage(coloredChat(ChatUtils.PREFIX + "&aPlugin reloaded"));
-        SMP.getPlugin().getLogger().info(coloredChat("[SMP] Reloaded SMP v1.3.5"));
+        log(coloredChat("[SMP] Reloaded SMP v" + smp.getDescription()));
     }
 
     public static CoreProtectAPI loadCoreProtect() {
         Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("CoreProtect");
-        if (!(plugin instanceof CoreProtect)) {
+        if (!(plugin instanceof CoreProtect coreProtect)) {
             return null;
         }
-        CoreProtectAPI CoreProtect = ((CoreProtect) plugin).getAPI();
-        if (CoreProtect.isEnabled() && CoreProtect.APIVersion() >= 6) {
-            return CoreProtect;
+
+        CoreProtectAPI api = coreProtect.getAPI();
+        if (api.isEnabled() && api.APIVersion() >= 6) {
+            return api;
         }
+
         return null;
     }
 
