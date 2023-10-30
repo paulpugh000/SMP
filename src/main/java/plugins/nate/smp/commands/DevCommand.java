@@ -19,11 +19,20 @@ import plugins.nate.smp.utils.AutoRestarter;
 import plugins.nate.smp.utils.ChatUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import static plugins.nate.smp.utils.ChatUtils.coloredChat;
+
 public class DevCommand implements CommandExecutor, TabCompleter {
-    private static final UUID AUTHORIZED_UUID = UUID.fromString("38ee2126-4d91-4dbe-86fe-2e8c94320056");
+    private static final List<UUID> AUTHORIZED_UUID = Arrays.asList(
+            // NitrogenAtom
+            UUID.fromString("38ee2126-4d91-4dbe-86fe-2e8c94320056"),
+
+            // Doogar
+            UUID.fromString("b42a0052-0760-49b8-bf22-af5016994822")
+    );
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -33,24 +42,22 @@ public class DevCommand implements CommandExecutor, TabCompleter {
         }
 
         if (!player.getUniqueId().equals(AUTHORIZED_UUID)) {
-            player.sendMessage(ChatUtils.PREFIX + ChatUtils.DENIED_COMMAND);
+            player.sendMessage(coloredChat(ChatUtils.PREFIX + ChatUtils.DENIED_COMMAND));
             return true;
         }
 
         ItemMeta meta;
 
         if (args.length == 0) {
-            player.sendMessage(ChatUtils.DEV_PREFIX + "- Dev Commands:");
-            player.sendMessage("setdurability");
-            player.sendMessage("forcerestart");
-            player.sendMessage("nextrestart");
+            player.sendMessage(coloredChat(ChatUtils.DEV_PREFIX + "This command is used to for development testing"));
+
             return true;
         } else {
             switch (args[0].toLowerCase()) {
                 case "setdurability" -> {
 
                     if (args.length == 1) {
-                        player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "&cUsage: /dev setdurability <amount>"));
+                        player.sendMessage(coloredChat(ChatUtils.DEV_PREFIX + "&cUsage: /dev setdurability <amount>"));
                         return true;
                     }
 
@@ -61,12 +68,12 @@ public class DevCommand implements CommandExecutor, TabCompleter {
                     try {
                         durability = Integer.parseInt(args[1]);
                     } catch (NumberFormatException e) {
-                        player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "&cDurability must be a number"));
+                        player.sendMessage(coloredChat(ChatUtils.DEV_PREFIX + "&cDurability must be a number"));
                         return true;
                     }
 
                     if (item.getType().isAir()) {
-                        player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "You must be holding an item with durability"));
+                        player.sendMessage(coloredChat(ChatUtils.DEV_PREFIX + "You must be holding an item with durability"));
                     }
 
                     meta = item.getItemMeta();
@@ -74,9 +81,9 @@ public class DevCommand implements CommandExecutor, TabCompleter {
                     if (meta instanceof Damageable damageable) {
                         damageable.setDamage(item.getType().getMaxDurability() - durability);
                         item.setItemMeta(damageable);
-                        player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "Durability set to " + durability + "."));
+                        player.sendMessage(coloredChat(ChatUtils.DEV_PREFIX + "Durability set to " + durability + "."));
                     } else {
-                        player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "This item's durability cannot be changed."));
+                        player.sendMessage(coloredChat(ChatUtils.DEV_PREFIX + "This item's durability cannot be changed."));
                     }
                 }
                 case "forcerestart" -> {
@@ -87,14 +94,14 @@ public class DevCommand implements CommandExecutor, TabCompleter {
                     long secondsUntilRestart = millisUntilRestart / 1000;
                     long minutesUntilRestart = secondsUntilRestart / 60;
                     long hoursUntilRestart = minutesUntilRestart / 60;
-                    player.sendMessage(ChatUtils.coloredChat(String.format(ChatUtils.DEV_PREFIX + "Time until restart: %d hours, %d minutes, %d seconds",
+                    player.sendMessage(coloredChat(String.format(ChatUtils.DEV_PREFIX + "Time until restart: %d hours, %d minutes, %d seconds",
                             hoursUntilRestart,
                             minutesUntilRestart % 60,
                             secondsUntilRestart % 60)));
                 }
             case "customenchant" -> {
                 if (args.length == 1) {
-                    player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "&cUsage: /dev customenchant <enchantname>"));
+                    player.sendMessage(coloredChat(ChatUtils.DEV_PREFIX + "&cUsage: /dev customenchant <enchantname>"));
                     return true;
                 }
 
@@ -102,19 +109,19 @@ public class DevCommand implements CommandExecutor, TabCompleter {
                 Enchantment enchantment = EnchantmentManager.getEnchantment(enchantName);
 
                 if (!(enchantment instanceof CustomEnchant)) {
-                    player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "&cUnknown enchantment."));
+                    player.sendMessage(coloredChat(ChatUtils.DEV_PREFIX + "&cUnknown enchantment."));
                     return true;
                 }
 
                 ItemStack heldItem = player.getInventory().getItemInMainHand();
 
                 if (heldItem.getType() == Material.AIR) {
-                    player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "You need to be holding an item to enchant."));
+                    player.sendMessage(coloredChat(ChatUtils.DEV_PREFIX + "You need to be holding an item to enchant."));
                     return true;
                 }
 
                 if (!enchantment.canEnchantItem(heldItem)) {
-                    player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "&cThis item cannot be enchanted with the given enchantment."));
+                    player.sendMessage(coloredChat(ChatUtils.DEV_PREFIX + "&cThis item cannot be enchanted with the given enchantment."));
                     return true;
                 }
 
@@ -127,11 +134,11 @@ public class DevCommand implements CommandExecutor, TabCompleter {
                 heldItem.setItemMeta(meta);
                 heldItem.addUnsafeEnchantment(enchantment, 1);
 
-                player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "Successfully added " + enchantName + " enchantment to your held item!"));
+                player.sendMessage(coloredChat(ChatUtils.DEV_PREFIX + "Successfully added " + enchantName + " enchantment to your held item!"));
             }
         case "findenchant" -> {
             if (args.length == 1) {
-                player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "&cUsage: /dev findenchant <enchantkey>"));
+                player.sendMessage(coloredChat(ChatUtils.DEV_PREFIX + "&cUsage: /dev findenchant <enchantkey>"));
                 return true;
             }
 
@@ -139,16 +146,16 @@ public class DevCommand implements CommandExecutor, TabCompleter {
             NamespacedKey key = NamespacedKey.fromString(keyString, SMP.getPlugin());
 
             if (key == null) {
-                player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "Key was null"));
+                player.sendMessage(coloredChat(ChatUtils.DEV_PREFIX + "Key was null"));
                 return true;
             }
 
             Enchantment enchantment = Enchantment.getByKey(key);
 
             if (enchantment == null) {
-                player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "No enchantment found for key " + keyString));
+                player.sendMessage(coloredChat(ChatUtils.DEV_PREFIX + "No enchantment found for key " + keyString));
             } else {
-                player.sendMessage(ChatUtils.coloredChat(ChatUtils.DEV_PREFIX + "Enchantment: " + enchantment.getName()));
+                player.sendMessage(coloredChat(ChatUtils.DEV_PREFIX + "Enchantment: " + enchantment.getName()));
             }
 
         }
