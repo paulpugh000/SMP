@@ -19,7 +19,7 @@ This is a custom solution dedicated to providing the players with a unique vanil
 - Enabled wither spawning
 - Added CoreProtect logging to VeinMiner and Timber enchantments
 
-### 1.4.1
+### 1.4.2
 - Fixed chest lock exploit
 
 ### 1.4.1
