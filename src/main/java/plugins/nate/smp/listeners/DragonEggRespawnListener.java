@@ -13,7 +13,6 @@ import org.bukkit.event.entity.EntityDeathEvent;
 public class DragonEggRespawnListener implements Listener {
     @EventHandler
     public void onDragonDeath(EntityDeathEvent e) {
-        Bukkit.broadcastMessage("Test");
         if (e.getEntityType() != EntityType.ENDER_DRAGON) {
             return;
         }
