@@ -14,7 +14,7 @@ public final class SMP extends JavaPlugin {
     private static SMP plugin;
     private static CoreProtectAPI coreProtect;
 
-    public static StateFlag WITHER_PROOF;
+    public static StateFlag WITHER_EXPLOSIONS;
 
     @Override
     public void onEnable() {
@@ -38,10 +38,10 @@ public final class SMP extends JavaPlugin {
 
         FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();
         try {
-            StateFlag witherProofFlag = new StateFlag("wither-proof", false);
-            registry.register(witherProofFlag);
+            StateFlag witherExplosionsFlag = new StateFlag("wither-explosions", true);
+            registry.register(witherExplosionsFlag);
 
-            WITHER_PROOF = witherProofFlag;
+            WITHER_EXPLOSIONS = witherExplosionsFlag;
         } catch (FlagConflictException ignored) {}
     }
 
