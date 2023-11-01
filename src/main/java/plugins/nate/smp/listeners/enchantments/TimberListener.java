@@ -91,12 +91,10 @@ public class TimberListener implements Listener {
         block.setType(Material.AIR);
         blocksDestroyed.incrementAndGet();
 
-        for (int x = -1; x <= 1; x++) {
-            for (int y = -1; y <= 1; y++) {
-                for (int z = -1; z <= 1; z++) {
-                    if (x != 0 || y != 0 || z != 0) {
-                        destroyTree(block.getRelative(x, y, z), drops, blocksDestroyed, checkedBlocks, player);
-                    }
+        for (int x = -1; x <= 1; x += 2) {
+            for (int y = -1; y <= 1; y += 2) {
+                for (int z = -1; z <= 1; z += 2) {
+                    destroyTree(block.getRelative(x, y, z), drops, blocksDestroyed, checkedBlocks, player);
                 }
             }
         }
