@@ -6,11 +6,12 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
+import org.jetbrains.annotations.NotNull;
 import plugins.nate.smp.utils.ChatUtils;
 
 public class SayCommand implements CommandExecutor {
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!sender.hasPermission("smp.say")) {
             sender.sendMessage(ChatUtils.coloredChat(ChatUtils.PREFIX + ChatUtils.DENIED_COMMAND));
             return true;

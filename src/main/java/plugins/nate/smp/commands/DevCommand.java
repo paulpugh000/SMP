@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 import plugins.nate.smp.SMP;
 import plugins.nate.smp.enchantments.CustomEnchant;
 import plugins.nate.smp.managers.EnchantmentManager;
@@ -35,7 +36,7 @@ public class DevCommand implements CommandExecutor, TabCompleter {
     );
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage("This command can only be executed by a player.");
             return true;
@@ -168,7 +169,7 @@ public class DevCommand implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         List<String> completions = new ArrayList<>();
         if (!(sender instanceof Player player)) {
             return completions;

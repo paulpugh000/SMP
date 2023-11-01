@@ -6,6 +6,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import plugins.nate.smp.SMP;
 import plugins.nate.smp.managers.TrustManager;
 import plugins.nate.smp.utils.ChatUtils;
@@ -23,7 +24,7 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
     private static final Set<String> SUB_COMMANDS = Set.of("help", "features", "reload", "trust", "untrust", "trustlist");
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player player)) {
             if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
                 SMPUtils.reloadPlugin(sender);
