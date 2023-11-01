@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import static plugins.nate.smp.utils.ChatUtils.sendMessage;
 
 public class SMPCommand implements CommandExecutor, TabCompleter {
-    private static final Set<String> SUB_COMMANDS = Set.of("help", "features", "reload", "trust", "untrust", "trustlist");
+    private static final Set<String> VALID_SUBCOMMANDS = Set.of("help", "features", "reload", "trust", "untrust", "trustlist");
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
@@ -116,8 +116,8 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length == 1) {
-            return SUB_COMMANDS.stream()
-                    .filter(subCommand -> subCommand.startsWith(args[0].toLowerCase()))
+            return VALID_SUBCOMMANDS.stream()
+                    .filter(subcommand -> subcommand.startsWith(args[0].toLowerCase()))
                     .toList();
         } else if (args.length == 2) {
             if ("trust".equalsIgnoreCase(args[0])) {
