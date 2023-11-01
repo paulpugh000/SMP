@@ -30,7 +30,7 @@ public class SMPUtils {
         CommandRegistration.registerCommands(smp);
 
         sender.sendMessage(coloredChat(ChatUtils.PREFIX + "&aPlugin reloaded"));
-        log(coloredChat("[SMP] Reloaded SMP v" + smp.getDescription()));
+        log(coloredChat("[SMP] Reloaded SMP v" + smp.getDescription().getVersion()));
     }
 
     public static CoreProtectAPI loadCoreProtect() {
