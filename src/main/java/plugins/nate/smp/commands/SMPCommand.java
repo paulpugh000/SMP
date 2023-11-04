@@ -1,168 +1,149 @@
 package plugins.nate.smp.commands;
 
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
-import plugins.nate.smp.SMP;
+import org.jetbrains.annotations.NotNull;
 import plugins.nate.smp.managers.TrustManager;
 import plugins.nate.smp.utils.ChatUtils;
 import plugins.nate.smp.utils.SMPUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static plugins.nate.smp.utils.ChatUtils.coloredChat;
+import static plugins.nate.smp.utils.ChatUtils.sendMessage;
 
 public class SMPCommand implements CommandExecutor, TabCompleter {
-    private static final Set<String> SUB_COMMANDS = Set.of("help", "features", "reload", "trust", "untrust", "trustlist");
+    private static final Set<String> VALID_SUBCOMMANDS = Set.of("help", "features", "reload", "trust", "untrust", "trustlist");
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
-                SMPUtils.reloadPlugin(sender);
-                return true;
-            }
-            sender.sendMessage(coloredChat("&cOnly players can use this command!"));
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+        if (args.length == 0) {
+            sendMessage(sender, "&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------");
+            sendMessage(sender, "&aWelcome to the CoolmentSMP! This server is driven by public");
+            sendMessage(sender, "&aand private plugins to give the best experience possible.");
+            sendMessage(sender, "&aThe SMP plugin is main driver of this server and is meant to");
+            sendMessage(sender, "&aprovide a vanilla-esque experience. With additions in and out");
+            sendMessage(sender, "&aof game, including QoL additions and Discord integration. ");
+            sendMessage(sender, "&aIf you have any feature requests or issues contact staff");
+            sendMessage(sender, "&aon our Discord. Thank you and have fun!");
+            sendMessage(sender, "&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------");
+
             return true;
         }
 
-        if (args.length == 0) {
-            player.sendMessage(coloredChat("&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------"));
-            player.sendMessage(coloredChat("&aWelcome to the CoolmentSMP! This server is driven by public"));
-            player.sendMessage(coloredChat("&aand private plugins to give the best experience possible."));
-            player.sendMessage(coloredChat("&aThe SMP plugin is main driver of this server and is meant to"));
-            player.sendMessage(coloredChat("&aprovide a vanilla-esque experience. With additions in and out"));
-            player.sendMessage(coloredChat("&aof game, including QoL additions and Discord integration. "));
-            player.sendMessage(coloredChat("&aIf you have any feature requests or issues contact staff"));
-            player.sendMessage(coloredChat("&aon our Discord. Thank you and have fun!"));
-            player.sendMessage(coloredChat("&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------"));
-        } else {
-            switch (args[0].toLowerCase()) {
-                case "reload" -> {
-                    if (player.hasPermission("smp.reload")) {
-                        SMPUtils.reloadPlugin(player);
-                    } else {
-                        player.sendMessage(coloredChat(ChatUtils.PREFIX + ChatUtils.DENIED_COMMAND));
-                    }
-                }
-
-                case "help" -> {
-                    player.sendMessage(coloredChat("&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------"));
-                    player.sendMessage(coloredChat("&a/smp help &7- Displays this menu"));
-                    player.sendMessage(coloredChat("&a/smp features &7- Display the unique features of the server"));
-                    player.sendMessage(coloredChat("&a/smp trust &7- Add user to your trust list"));
-                    player.sendMessage(coloredChat("&a/smp untrust &7- Remove user from your trust list"));
-                    player.sendMessage(coloredChat("&a/smp trustlist &7- Display your trust list"));
-                }
-
-                case "features" -> {
-                    player.sendMessage(coloredChat("&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------"));
-                    player.sendMessage(coloredChat("&aCheck out the GitHub for a list of features:"));
-                    player.sendMessage(coloredChat("&7 - &ahttps://github.com/NRProjects/SMP &7-"));
-                    player.sendMessage(coloredChat("&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------"));
-                }
-
-                case "trust" -> {
-                    if (args.length == 2) {
-                        if (args[1].equalsIgnoreCase(player.getName())) {
-                            player.sendMessage(coloredChat(ChatUtils.PREFIX + "&cYou cannot trust yourself!"));
-                        } else {
-                            Player target = player.getServer().getPlayer(args[1]);
-                            if (target != null) {
-                                boolean trusted = TrustManager.trustPlayer(player, target);
-                                if (trusted) {
-                                    player.sendMessage(coloredChat(ChatUtils.PREFIX + "&aYou have trusted " + target.getName()));
-                                } else {
-                                    player.sendMessage(coloredChat(ChatUtils.PREFIX + "&cYou've already trusted that player"));
-                                }
-                            } else {
-                                player.sendMessage(coloredChat(ChatUtils.PREFIX + "&cPlayer not found"));
-                            }
-                        }
-                    } else {
-                        player.sendMessage(coloredChat(ChatUtils.PREFIX + "&cUsage: /smp trust <player>"));
-                    }
-                }
-
-                case "untrust" -> {
-                    if (args.length == 2) {
-                        if (args[1].equalsIgnoreCase(player.getName())) {
-                            player.sendMessage(coloredChat(ChatUtils.PREFIX + "&cYou cannot untrust yourself!"));
-                        } else {
-                            Player target = player.getServer().getPlayer(args[1]);
-                            if (target != null) {
-                                boolean untrusted = TrustManager.untrustPlayer(player, target);
-                                if (untrusted) {
-                                    player.sendMessage(coloredChat(ChatUtils.PREFIX + "&aYou have untrusted " + target.getName()));
-                                } else {
-                                    player.sendMessage(coloredChat(ChatUtils.PREFIX + "&cYou already don't trust that player"));
-                                }
-                            } else {
-                                player.sendMessage(coloredChat(ChatUtils.PREFIX + "&cPlayer not found"));
-                            }
-                        }
-                    } else {
-                        player.sendMessage(coloredChat(ChatUtils.PREFIX + "&cUsage: /smp untrust <player>"));
-                    }
-                }
-
-                case "trustlist" -> {
-                    Set<UUID> trustedPlayers = TrustManager.getTrustedPlayers(player.getUniqueId());
-                    if (trustedPlayers.isEmpty()) {
-                        player.sendMessage(coloredChat(ChatUtils.PREFIX + "&cYou have not trusted any players"));
-                    } else {
-                        Set<String> trustedPlayerNames = trustedPlayers.stream()
-                                .map(uuid -> Bukkit.getOfflinePlayer(uuid).getName())
-                                .collect(Collectors.toSet());
-                        player.sendMessage(coloredChat(ChatUtils.PREFIX + "&aTrusted Players: " + String.join(", ", trustedPlayerNames)));
-                    }
-                }
-
-                default -> {
-                    player.sendMessage(coloredChat(ChatUtils.PREFIX + "&cUnknown command"));
-                }
+        if (args[0].equalsIgnoreCase("reload")) {
+            if (!sender.hasPermission("smp.reload")) {
+                sendMessage(sender, ChatUtils.PREFIX + ChatUtils.DENIED_COMMAND);
+                return true;
             }
+
+            SMPUtils.reloadPlugin(sender);
+        } else if (args[0].equalsIgnoreCase("help")) {
+            sendMessage(sender, "&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------");
+            sendMessage(sender, "&a/smp help &7- Displays this menu");
+            sendMessage(sender, "&a/smp features &7- Display the unique features of the server");
+            sendMessage(sender, "&a/smp trust &7- Add user to your trust list");
+            sendMessage(sender, "&a/smp untrust &7- Remove user from your trust list");
+            sendMessage(sender, "&a/smp trustlist &7- Display your trust list");
+        } else if (args[0].equalsIgnoreCase("features")) {
+            sendMessage(sender, "&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------");
+            sendMessage(sender, "&aCheck out the GitHub for a list of features:");
+            sendMessage(sender, "&7 - &ahttps://github.com/NRProjects/SMP &7-");
+            sendMessage(sender, "&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------");
+        } else if (args[0].equalsIgnoreCase("trust") || args[0].equalsIgnoreCase("untrust")) {
+            if (!(sender instanceof Player player)) {
+                sendMessage(sender, "&cOnly players can use this command!");
+                return true;
+            }
+
+            String action = args[0].toLowerCase();
+
+            if (args.length != 2) {
+                sendMessage(sender, ChatUtils.PREFIX + "&cUsage: /smp " + action + " <player>");
+                return true;
+            }
+
+            if (args[1].equalsIgnoreCase(player.getName())) {
+                sendMessage(sender, ChatUtils.PREFIX + "&cYou cannot " + action + " yourself!");
+                return true;
+            }
+
+            OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
+            if (!target.hasPlayedBefore()) {
+                sendMessage(sender, ChatUtils.PREFIX + "&cPlayer not found");
+                return true;
+            }
+
+            boolean updated;
+            if (action.equals("trust")) {
+                updated = TrustManager.trustPlayer(player, target);
+            } else {
+                updated = TrustManager.untrustPlayer(player, target);
+            }
+
+            if (updated) {
+                sendMessage(sender, ChatUtils.PREFIX + "&aYou have " + action + "ed " + target.getName());
+            } else {
+                sendMessage(sender, ChatUtils.PREFIX + "&cYou've already " + action + "ed that player");
+            }
+        } else if (args[0].equalsIgnoreCase("trustlist")) {
+            if (!(sender instanceof Player player)) {
+                return true;
+            }
+
+            Set<UUID> trustedPlayers = TrustManager.getTrustedPlayers(player.getUniqueId());
+            if (trustedPlayers.isEmpty()) {
+                sendMessage(player, ChatUtils.PREFIX + "&cYou have not trusted any players");
+                return true;
+            }
+
+            String trustedPlayerNames = trustedPlayers.stream()
+                    .map(uuid -> Bukkit.getOfflinePlayer(uuid).getName())
+                    .filter(Objects::nonNull)
+                    .sorted()
+                    .collect(Collectors.joining(", "));
+
+            sendMessage(player, ChatUtils.PREFIX + "&aTrusted Players: " + trustedPlayerNames);
+        } else {
+            sendMessage(sender, ChatUtils.PREFIX + "&cUnknown command");
         }
+
         return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        List<String> completions = new ArrayList<>();
-        String argLower = args[0].toLowerCase();
-
-        if (!(sender instanceof Player)) return completions;
-
-        Player player = (Player) sender;
-
-        switch (args.length) {
-            case 1 -> completions.addAll(SUB_COMMANDS.stream()
-                    .filter(subCommand -> subCommand.startsWith(argLower)).toList());
-            case 2 -> {
-                String arg1Lower = args[1].toLowerCase();
-                if ("trust".equalsIgnoreCase(argLower)) {
-                    completions.addAll(getAllOnlinePlayerNames().stream()
-                            .filter(playerName -> playerName.toLowerCase().startsWith(arg1Lower)).toList());
-                } else if ("untrust".equalsIgnoreCase(argLower)) {
-                    completions.addAll(TrustManager.getTrustedPlayerNames(player.getUniqueId()).stream()
-                            .filter(trustedPlayerName -> trustedPlayerName.toLowerCase().startsWith(arg1Lower)).toList());
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+        if (args.length == 1) {
+            return VALID_SUBCOMMANDS.stream()
+                    .filter(subcommand -> subcommand.startsWith(args[0].toLowerCase()))
+                    .toList();
+        } else if (args.length == 2) {
+            if ("trust".equalsIgnoreCase(args[0])) {
+                return getAllOnlinePlayerNames().stream()
+                        .map(String::toLowerCase)
+                        .filter(playerName -> playerName.startsWith(args[1].toLowerCase()))
+                        .toList();
+            } else if ("untrust".equalsIgnoreCase(args[0])) {
+                if (!(sender instanceof Player player)) {
+                    return Collections.emptyList();
                 }
+
+                return TrustManager.getTrustedPlayerNames(player.getUniqueId()).stream()
+                        .map(String::toLowerCase)
+                        .filter(trustedPlayerName -> trustedPlayerName.startsWith(args[1].toLowerCase()))
+                        .sorted()
+                        .toList();
             }
         }
 
-        return completions;
+        return null;
     }
 
     private List<String> getAllOnlinePlayerNames() {
         return Bukkit.getOnlinePlayers().stream()
                 .map(Player::getName)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

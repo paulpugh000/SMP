@@ -1,6 +1,7 @@
 package plugins.nate.smp.managers;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -30,21 +31,28 @@ public class TrustManager {
         load();
     }
 
-    public static boolean trustPlayer(Player owner, Player trusted) {
+    public static boolean trustPlayer(Player owner, OfflinePlayer trusted) {
         HashSet<UUID> trustedPlayers = trustRelations.computeIfAbsent(owner.getUniqueId(), k -> new HashSet<>());
         boolean added = trustedPlayers.add(trusted.getUniqueId());
-        if (added) save();
+        if (added) {
+            save();
+        }
+
         return added;
     }
 
-    public static boolean untrustPlayer(Player owner, Player untrusted) {
+    public static boolean untrustPlayer(Player owner, OfflinePlayer untrusted) {
         HashSet<UUID> trustedPlayers = trustRelations.get(owner.getUniqueId());
-        if (trustedPlayers != null) {
-            boolean removed = trustedPlayers.remove(untrusted.getUniqueId());
-            if (removed) save();
-            return removed;
+        if (trustedPlayers == null) {
+            return false;
         }
-        return false;
+
+        boolean removed = trustedPlayers.remove(untrusted.getUniqueId());
+        if (removed) {
+            save();
+        }
+
+        return removed;
     }
 
     public static Set<UUID> getTrustedPlayers(UUID ownerUUID) {
@@ -62,6 +70,7 @@ public class TrustManager {
         for (UUID ownerUUID : trustRelations.keySet()) {
             config.set(ownerUUID.toString(), new ArrayList<>(convertSetToUUIDStrings(trustRelations.get(ownerUUID))));
         }
+
         try {
             config.save(file);
         } catch (IOException e) {
@@ -77,19 +86,15 @@ public class TrustManager {
     }
 
     private static Set<String> convertSetToUUIDStrings(Set<UUID> uuids) {
-        Set<String> uuidStrings = new HashSet<>();
-        for (UUID uuid : uuids) {
-            uuidStrings.add(uuid.toString());
-        }
-        return uuidStrings;
+        return uuids.stream()
+                .map(UUID::toString)
+                .collect(Collectors.toSet());
     }
 
     private static HashSet<UUID> convertStringsToUUIDSet(Set<String> uuidStrings) {
-        HashSet<UUID> uuids = new HashSet<>();
-        for (String uuidString : uuidStrings) {
-            uuids.add(UUID.fromString(uuidString));
-        }
-        return uuids;
+        return uuidStrings.stream()
+                .map(UUID::fromString)
+                .collect(Collectors.toCollection(HashSet::new)); //Collectors.toSet uses a HashSet implicitly, but this allows us type safety
     }
 }
 

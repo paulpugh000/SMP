@@ -6,6 +6,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import plugins.nate.smp.utils.SMPUtils;
 
 public class TimberEnchant extends Enchantment implements CustomEnchant {
@@ -15,7 +16,7 @@ public class TimberEnchant extends Enchantment implements CustomEnchant {
     }
 
     @Override
-    public String getName() {
+    public @NotNull String getName() {
         return "Timber";
     }
 
@@ -30,7 +31,7 @@ public class TimberEnchant extends Enchantment implements CustomEnchant {
     }
 
     @Override
-    public EnchantmentTarget getItemTarget() {
+    public @NotNull EnchantmentTarget getItemTarget() {
         return EnchantmentTarget.TOOL;
     }
 
@@ -45,7 +46,7 @@ public class TimberEnchant extends Enchantment implements CustomEnchant {
     }
 
     @Override
-    public boolean conflictsWith(Enchantment other) {
+    public boolean conflictsWith(@NotNull Enchantment other) {
         return false;
     }
 
