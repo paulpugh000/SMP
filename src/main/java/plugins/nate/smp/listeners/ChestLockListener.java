@@ -2,7 +2,9 @@ package plugins.nate.smp.listeners;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.block.*;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
@@ -17,7 +19,10 @@ import plugins.nate.smp.SMP;
 import plugins.nate.smp.managers.TrustManager;
 import plugins.nate.smp.utils.ChatUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.UUID;
 
 import static plugins.nate.smp.utils.ChatUtils.coloredChat;
 
@@ -35,7 +40,7 @@ public class ChestLockListener implements Listener {
         Block block = event.getBlock();
         Sign sign = (Sign) block.getState();
 
-        if (LOCKED_TAG.equalsIgnoreCase(sign.getLine(0)) && !playerHasAccess(player, sign)) {
+        if (isLockedSign(sign) && !playerHasAccess(player, sign)) {
             sendMessageAndCancel(event, player, "&cYou cannot edit this locked sign!");
             return;
         }
@@ -57,7 +62,7 @@ public class ChestLockListener implements Listener {
     public void onChestAccess(PlayerInteractEvent event) {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK && isStorageContainer(event.getClickedBlock().getType())) {
             Sign attachedSign = getAttachedSign(event.getClickedBlock());
-            if (attachedSign != null && LOCKED_TAG.equals(attachedSign.getLine(0)) && !playerHasAccess(event.getPlayer(), attachedSign)) {
+            if (attachedSign != null && isLockedSign(attachedSign) && !playerHasAccess(event.getPlayer(), attachedSign)) {
                 sendMessageAndCancel(event, event.getPlayer(), "&cThis chest is locked");
             }
         }
@@ -70,7 +75,7 @@ public class ChestLockListener implements Listener {
 
         if (isStorageContainer(block.getType())) {
             processBlockBreak(event, player, getAttachedSign(block));
-        } else if (block.getState() instanceof Sign sign && LOCKED_TAG.equals(sign.getLine(0))) {
+        } else if (block.getState() instanceof Sign sign && isLockedSign(sign)) {
             processBlockBreak(event, player, sign);
         }
     }
@@ -86,7 +91,7 @@ public class ChestLockListener implements Listener {
             Block adjacentBlock = event.getBlockPlaced().getRelative(face);
             if (isStorageContainer(adjacentBlock.getType())) {
                 Sign attachedSign = getAttachedSign(adjacentBlock);
-                if (attachedSign != null && LOCKED_TAG.equals(attachedSign.getLine(0)) && !playerCanPlaceHopper(player, attachedSign)) {
+                if (attachedSign != null && isLockedSign(attachedSign) && !playerCanPlaceHopper(player, attachedSign)) {
                     sendMessageAndCancel(event, player, "&cYou cannot place a hopper next to a locked container");
                     return;
                 }
@@ -95,7 +100,7 @@ public class ChestLockListener implements Listener {
     }
 
     private void processBlockBreak(BlockBreakEvent event, Player player, Sign sign) {
-        if (sign != null && LOCKED_TAG.equals(sign.getLine(0)) && !playerCanBreak(player, sign)) {
+        if (sign != null && isLockedSign(sign) && !playerCanBreak(player, sign)) {
             sendMessageAndCancel(event, player, isStorageContainer(getAttachedBlock(sign.getBlock()).getType()) ? "&cThis chest is locked" : "&cYou cannot break a lock");
         }
     }
@@ -135,6 +140,7 @@ public class ChestLockListener implements Listener {
                 .filter(otherBlock -> otherBlock.getBlockData() instanceof WallSign)
                 .filter(otherBlock -> otherBlock.getState() instanceof Sign)
                 .map(otherBlock -> (Sign) otherBlock.getState())
+                .filter(this::isLockedSign)
                 .findFirst()
                 .orElse(null);
     }
@@ -153,21 +159,32 @@ public class ChestLockListener implements Listener {
         return null;
     }
 
+    private UUID getLockedSignOwner(Sign sign) {
+        String ownerUUID = sign.getPersistentDataContainer().get(OWNER_UUID_KEY, PersistentDataType.STRING);
+        if (ownerUUID == null) {
+            return null;
+        }
+
+        return UUID.fromString(ownerUUID);
+    }
+
+    private boolean isLockedSign(Sign sign) {
+        return getLockedSignOwner(sign) != null;
+    }
+
     private boolean playerHasAccess(Player player, Sign attachedSign) {
         if (player.hasPermission("smp.chestlock.bypass") || player.isOp()) {
             return true;
         }
 
-        String ownerUUIDString = attachedSign.getPersistentDataContainer().get(OWNER_UUID_KEY, PersistentDataType.STRING);
-        UUID ownerUUID = UUID.fromString(ownerUUIDString);
+        UUID ownerUUID = getLockedSignOwner(attachedSign);
 
         Set<UUID> trustedPlayersUUID = TrustManager.getTrustedPlayers(ownerUUID);
         return player.getUniqueId().equals(ownerUUID) || trustedPlayersUUID.contains(player.getUniqueId());
     }
 
     private boolean isPlayerOwner(Player player, Sign attachedSign) {
-        String ownerUUIDString = attachedSign.getPersistentDataContainer().get(OWNER_UUID_KEY, PersistentDataType.STRING);
-        UUID ownerUUID = UUID.fromString(ownerUUIDString);
+        UUID ownerUUID = getLockedSignOwner(attachedSign);
         return player.getUniqueId().equals(ownerUUID);
     }
 
