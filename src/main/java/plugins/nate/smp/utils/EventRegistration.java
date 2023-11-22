@@ -22,5 +22,6 @@ public class EventRegistration {
         pm.registerEvents(new VeinMinerListener(), plugin);
         pm.registerEvents(new EnchantmentManager(), plugin);
         pm.registerEvents(new TimberListener(), plugin);
+        pm.registerEvents(new AntiEntityGriefListener(), plugin);
     }
 }

@@ -1,7 +1,6 @@
 package plugins.nate.smp.listeners;
 
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
@@ -15,9 +14,9 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.persistence.PersistentDataType;
-import plugins.nate.smp.SMP;
 import plugins.nate.smp.managers.TrustManager;
 import plugins.nate.smp.utils.ChatUtils;
+import plugins.nate.smp.utils.SMPUtils;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -31,7 +30,6 @@ public class ChestLockListener implements Listener {
     private static final BlockFace[] CARDINAL_FACES = { BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
     private static final BlockFace[] FACES_TO_CHECK = { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
     private static final Set<Material> STORAGE_CONTAINERS = EnumSet.of(Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
-    private static final NamespacedKey OWNER_UUID_KEY = new NamespacedKey(SMP.getPlugin(), "ownerUUID");
 
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -53,7 +51,7 @@ public class ChestLockListener implements Listener {
             event.setLine(3, "");
             player.sendMessage(coloredChat(ChatUtils.PREFIX + "&aChest locked"));
 
-            sign.getPersistentDataContainer().set(OWNER_UUID_KEY, PersistentDataType.STRING, player.getUniqueId().toString());
+            sign.getPersistentDataContainer().set(SMPUtils.OWNER_UUID_KEY, PersistentDataType.STRING, player.getUniqueId().toString());
             sign.update();
         }
     }
@@ -160,7 +158,7 @@ public class ChestLockListener implements Listener {
     }
 
     private UUID getLockedSignOwner(Sign sign) {
-        String ownerUUID = sign.getPersistentDataContainer().get(OWNER_UUID_KEY, PersistentDataType.STRING);
+        String ownerUUID = sign.getPersistentDataContainer().get(SMPUtils.OWNER_UUID_KEY, PersistentDataType.STRING);
         if (ownerUUID == null) {
             return null;
         }
@@ -173,7 +171,7 @@ public class ChestLockListener implements Listener {
     }
 
     private boolean playerHasAccess(Player player, Sign attachedSign) {
-        if (player.hasPermission("smp.chestlock.bypass") || player.isOp()) {
+        if (canPlayerBypass(player)) {
             return true;
         }
 
@@ -188,16 +186,16 @@ public class ChestLockListener implements Listener {
         return player.getUniqueId().equals(ownerUUID);
     }
 
-    private boolean isPlayerBypassing(Player player) {
-        return player.hasPermission("smp.chestlock.bypass") || player.isOp();
+    private boolean canPlayerBypass(Player player) {
+        return player.hasPermission("smp.bypasslocks") || player.isOp();
     }
 
     private boolean playerCanBreak(Player player, Sign attachedSign) {
-        return isPlayerOwner(player, attachedSign) || isPlayerBypassing(player);
+        return isPlayerOwner(player, attachedSign) || canPlayerBypass(player);
     }
 
     private boolean playerCanPlaceHopper(Player player, Sign attachedSign) {
-        return isPlayerOwner(player, attachedSign) || isPlayerBypassing(player);
+        return isPlayerOwner(player, attachedSign) || canPlayerBypass(player);
     }
 
     private boolean isStorageContainer(Material material) {

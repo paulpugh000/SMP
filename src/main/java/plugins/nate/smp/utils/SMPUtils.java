@@ -19,6 +19,9 @@ import plugins.nate.smp.SMP;
 import static plugins.nate.smp.utils.ChatUtils.coloredChat;
 
 public class SMPUtils {
+    public static final NamespacedKey OWNER_UUID_KEY = new NamespacedKey(SMP.getPlugin(), "ownerUUID");
+    public static final NamespacedKey TRADE_LOCKED_KEY = new NamespacedKey(SMP.getPlugin(), "tradeLocked");
+
     public static void reloadPlugin(CommandSender sender) {
         SMP smp = SMP.getPlugin();
         smp.getLogger().info("[SMP] Reloading SMP plugin...");

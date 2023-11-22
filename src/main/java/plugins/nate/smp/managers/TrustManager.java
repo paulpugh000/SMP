@@ -56,6 +56,10 @@ public class TrustManager {
     }
 
     public static Set<UUID> getTrustedPlayers(UUID ownerUUID) {
+        if (ownerUUID == null) {
+            return null;
+        }
+
         return trustRelations.getOrDefault(ownerUUID, new HashSet<>());
     }
 
