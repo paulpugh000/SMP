@@ -155,10 +155,6 @@ public class AntiEntityGriefListener implements Listener {
 
     @EventHandler
     public void onNametagChange(PlayerInteractEntityEvent e) {
-        if (!PASSIVE_MOBS.contains(e.getRightClicked().getType())) {
-            return;
-        }
-
         Consumer<ItemStack> handleNametag = (item) -> {
             if (item.getItemMeta() == null) { return; }
 
@@ -191,6 +187,11 @@ public class AntiEntityGriefListener implements Listener {
                 }
             } else if (displayName.equals("[ClaimToggle]")) {
                 e.setCancelled(true);
+
+                if (!PASSIVE_MOBS.contains(e.getRightClicked().getType())) {
+                    sendMessage(e.getPlayer(), ChatUtils.PREFIX + "&cError: You cannot claim hostile entities.");
+                    return;
+                }
 
                 UUID entityOwnerUUID = getEntityOwner(e.getRightClicked());
                 if (entityOwnerUUID != null && !entityOwnerUUID.equals(e.getPlayer().getUniqueId())) {
