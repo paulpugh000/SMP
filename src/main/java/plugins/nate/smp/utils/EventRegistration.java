@@ -13,7 +13,7 @@ public class EventRegistration {
         PluginManager pm = Bukkit.getPluginManager();
 
         pm.registerEvents(new CropReplanterListener(), plugin);
-        pm.registerEvents(new PluginsCommandListener(), plugin);
+        pm.registerEvents(new CommandInterceptionListener(), plugin);
         pm.registerEvents(new ChestLockListener(), plugin);
         pm.registerEvents(new ConcreteWaterListener(), plugin);
         pm.registerEvents(new AnvilRepairCostListener(), plugin);
@@ -23,5 +23,6 @@ public class EventRegistration {
         pm.registerEvents(new EnchantmentManager(), plugin);
         pm.registerEvents(new TimberListener(), plugin);
         pm.registerEvents(new AntiEntityGriefListener(), plugin);
+        pm.registerEvents(new PlayerJoinListener(), plugin);
     }
 }
