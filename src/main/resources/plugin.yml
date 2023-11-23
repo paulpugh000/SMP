@@ -13,8 +13,6 @@ commands:
     usage: /<command>
   pl:
     usage: /<command>
-  bukkit:plugins:
-    usage: /<command>
 #  claim:
 #    description: Get the claiming tool
 #    usage: /<command>

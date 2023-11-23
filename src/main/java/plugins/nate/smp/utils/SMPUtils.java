@@ -7,11 +7,9 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import net.coreprotect.CoreProtect;
 import net.coreprotect.CoreProtectAPI;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.Plugin;
 import plugins.nate.smp.SMP;
@@ -28,6 +26,10 @@ public class SMPUtils {
 
         EventRegistration.registerEvents(smp);
         CommandRegistration.registerCommands(smp);
+
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            NametagManager.updateNametag(p);
+        }
 
         sender.sendMessage(coloredChat(ChatUtils.PREFIX + "&aPlugin reloaded"));
         log(coloredChat("[SMP] Reloaded SMP v" + smp.getDescription().getVersion()));
