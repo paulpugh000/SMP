@@ -1,5 +1,6 @@
 package plugins.nate.smp.utils;
 
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import plugins.nate.smp.SMP;
@@ -49,7 +50,7 @@ public class AutoRestarter {
 
             @Override
             public void run() {
-                Bukkit.broadcastMessage(ChatUtils.coloredChat(ChatUtils.SERVER_PREFIX + message));
+                Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', ChatUtils.SERVER_PREFIX + message));
             }
         }.runTaskLaterAsynchronously(SMP.getPlugin(SMP.class), delay / 50);
     }

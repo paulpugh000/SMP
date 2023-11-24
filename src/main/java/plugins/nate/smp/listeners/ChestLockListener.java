@@ -23,7 +23,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.UUID;
 
-import static plugins.nate.smp.utils.ChatUtils.coloredChat;
+import static plugins.nate.smp.utils.ChatUtils.*;
 
 public class ChestLockListener implements Listener {
     private static final String LOCKED_TAG = "[LockedV2]";
@@ -49,7 +49,7 @@ public class ChestLockListener implements Listener {
             event.setLine(1, player.getName());
             event.setLine(2, "");
             event.setLine(3, "");
-            player.sendMessage(coloredChat(ChatUtils.PREFIX + "&aChest locked"));
+            sendMessage(player, PREFIX + "&aChest locked");
 
             sign.getPersistentDataContainer().set(SMPUtils.OWNER_UUID_KEY, PersistentDataType.STRING, player.getUniqueId().toString());
             sign.update();
@@ -109,7 +109,7 @@ public class ChestLockListener implements Listener {
     }
 
     private void sendMessageAndCancel(Event event, Player player, String message) {
-        player.sendMessage(coloredChat(ChatUtils.PREFIX + message));
+        sendMessage(player, PREFIX + message);
         if (event instanceof Cancellable c) {
             c.setCancelled(true);
         }

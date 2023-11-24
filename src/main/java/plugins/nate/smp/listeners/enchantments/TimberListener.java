@@ -18,6 +18,9 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static plugins.nate.smp.utils.ChatUtils.PREFIX;
+import static plugins.nate.smp.utils.ChatUtils.sendMessage;
+
 
 public class TimberListener implements Listener {
     private static final int MAX_BLOCKS = 192;
@@ -47,7 +50,7 @@ public class TimberListener implements Listener {
 
 
             if (isPlayerPlaced(block)) {
-                player.sendMessage(ChatUtils.coloredChat(ChatUtils.PREFIX + "&cYou cannot use Timber on player placed blocks!"));
+                sendMessage(player, PREFIX + "&cYou cannot use Timber on player placed blocks!");
                 return;
             }
 
