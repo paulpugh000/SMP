@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -99,7 +100,7 @@ public class AntiEntityGriefListener implements Listener {
         return Boolean.TRUE.equals(entity.getPersistentDataContainer().get(SMPUtils.TRADE_LOCKED_KEY, PersistentDataType.BOOLEAN));
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onEntityDamage(EntityDamageEvent e) {
         if (!PASSIVE_MOBS.contains(e.getEntityType())) {
             return;
@@ -110,7 +111,7 @@ public class AntiEntityGriefListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOW)
     public void onEntityDamageByOther(EntityDamageByEntityEvent e) {
         UUID ownerUUID = getEntityOwner(e.getEntity());
         if (ownerUUID == null) {
