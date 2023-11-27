@@ -38,7 +38,6 @@ public final class SMP extends JavaPlugin {
         plugin = this;
         coreProtect = SMPUtils.loadCoreProtect();
 
-        AutoRestarter.scheduleRestart();
 
         TrustManager.init(this.getDataFolder());
 
