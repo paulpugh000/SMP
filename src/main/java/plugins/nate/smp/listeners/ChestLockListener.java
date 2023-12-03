@@ -14,11 +14,8 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.persistence.PersistentDataType;
-import plugins.nate.smp.SMP;
 import plugins.nate.smp.managers.TrustManager;
-import plugins.nate.smp.utils.ChatUtils;
 import plugins.nate.smp.utils.SMPUtils;
 
 import java.util.Arrays;
@@ -26,6 +23,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.UUID;
 
+import static org.bukkit.block.sign.Side.FRONT;
 import static plugins.nate.smp.utils.ChatUtils.*;
 
 public class ChestLockListener implements Listener {
@@ -34,7 +32,7 @@ public class ChestLockListener implements Listener {
     private static final BlockFace[] FACES_TO_CHECK = { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
     private static final Set<Material> STORAGE_CONTAINERS = EnumSet.of(Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
 
- // TODO: Prevent multiple people from placing lock signs on a single chest or double chest.
+    // TODO: Prevent multiple people from placing lock signs on a single chest or double chest.
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onSignChange(SignChangeEvent event) {
@@ -43,16 +41,14 @@ public class ChestLockListener implements Listener {
         Sign sign = (Sign) block.getState();
         World world = player.getWorld();
         Location signLocation = sign.getLocation();
-        double x = signLocation.getX();
-        double y = signLocation.getY();
-        double z = signLocation.getZ();
+
 
         if (isLockedSign(sign) && !playerHasAccess(player, sign)) {
             sendMessageAndCancel(event, player, "&cYou cannot edit this locked sign!");
             return;
         }
 
-        if (hasLockLine(event) && isLockableSign(block)) {
+        if (hasLockLine(sign) && isLockableSign(block)) {
             event.setLine(0, LOCKED_TAG);
             event.setLine(1, player.getName());
             event.setLine(2, "");
@@ -70,10 +66,10 @@ public class ChestLockListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChestAccess(PlayerInteractEvent event) {
-//        If right clicked on storage container
+        // If right-clicked on storage container
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK && isStorageContainer(event.getClickedBlock().getType())) {
             Sign attachedSign = getAttachedSign(event.getClickedBlock());
-//            If valid sign and doesn't have access
+            // If valid sign and doesn't have access
             if (attachedSign != null && isLockedSign(attachedSign) && !playerHasAccess(event.getPlayer(), attachedSign)) {
                 sendMessageAndCancel(event, event.getPlayer(), "&cThis chest is locked");
             }
@@ -103,13 +99,14 @@ public class ChestLockListener implements Listener {
             Block adjacentBlock = event.getBlockPlaced().getRelative(face);
             if (isStorageContainer(adjacentBlock.getType())) {
                 Sign attachedSign = getAttachedSign(adjacentBlock);
-                if (attachedSign != null && isLockedSign(attachedSign) && !playerCanPlaceHopper(player, attachedSign)) {
+                if (attachedSign != null && isLockedSign(attachedSign) && !playerCanInteract(player, attachedSign)) {
                     sendMessageAndCancel(event, player, "&cYou cannot place a hopper next to a locked container");
                     return;
                 }
             }
         }
     }
+
     /**
     *   Spawn particles with random offsets, .25 blocks in variation
     */
@@ -120,11 +117,16 @@ public class ChestLockListener implements Listener {
 
         world.spawnParticle(particle, x +.5, y + .5, z + .5, 10, .25, .25, .25);
     }
+
+    /**
+    *  sendMessageAndCancel if they are unable to break a sign or chest
+    */
     private void processBlockBreak(BlockBreakEvent event, Player player, Sign sign) {
-        if (sign != null && isLockedSign(sign) && !playerCanBreak(player, sign)) {
+        if (sign != null && isLockedSign(sign) && !playerCanInteract(player, sign)) {
             sendMessageAndCancel(event, player, isStorageContainer(getAttachedBlock(sign.getBlock()).getType()) ? "&cThis chest is locked" : "&cYou cannot break a lock");
         }
     }
+
     /**
     * Checks if block is a WallSign
      */
@@ -142,30 +144,33 @@ public class ChestLockListener implements Listener {
         }
     }
 
+    /**
+    * If its a WallSign, gets the block its attached to. Otherwise, the block below it
+     */
     private Block getAttachedBlock(Block block) {
         BlockData blockData = block.getBlockData();
         return blockData instanceof WallSign ? block.getRelative(((WallSign) blockData).getFacing().getOppositeFace()) : block.getRelative(BlockFace.DOWN);
     }
+
     /**
-     * Checks CARDINAL_FACES around a Material.CHEST or Material.TRAPPED_CHEST
-     * <p>
-     * Returns the first block that has the same type as the Block
+     * Grabs DoubleChestInventory from block and returns the opposite block in the double chest
     */
     private Block getOtherHalfOfChest(Block block) {
-//        Checks if block isn't CHEST or TRAPPED_CHEST
+        // Checks if block isn't CHEST or TRAPPED_CHEST
         if (block.getType() != Material.CHEST && block.getType() != Material.TRAPPED_CHEST) {
             return null;
         }
 
-//        yeah i dont know what this does or how it works but SteelPhoenix on spigot forums knows
         BlockState blockState = block.getState();
         if (!(blockState instanceof Chest chest)) {
             return null;
         }
+
         Inventory inventory = chest.getInventory();
         if (!(inventory instanceof DoubleChestInventory doubleChestInventory)) {
             return null;
         }
+
         Block leftSide = doubleChestInventory.getLeftSide().getLocation().getBlock();
         Block rightSide = doubleChestInventory.getRightSide().getLocation().getBlock();
         if (block.equals(leftSide)) {
@@ -174,9 +179,9 @@ public class ChestLockListener implements Listener {
             return leftSide;
         }
 
-        SMPUtils.log("Defaulted");
         return null;
     }
+
     /**
      * Checks CARDINAL_FACES around block and returns the first wall sign found
      */
@@ -190,6 +195,7 @@ public class ChestLockListener implements Listener {
                 .findFirst()
                 .orElse(null);
     }
+
     /**
      *  Checks sign attached to the current block or the other half of the chest
      */
@@ -206,6 +212,7 @@ public class ChestLockListener implements Listener {
 
         return null;
     }
+
     /**
      * Gets block data of PublicBukkitValues.smp:owneruuid stored in NBT
      */
@@ -217,12 +224,14 @@ public class ChestLockListener implements Listener {
 
         return UUID.fromString(ownerUUID);
     }
+
     /**
      * Checks if sign is valid and has ownerUUID data
      */
     private boolean isLockedSign(Sign sign) {
         return getLockedSignOwner(sign) != null;
     }
+
     /**
      * Returns true if player is the owner or is trusted by the owner of the sign
      */
@@ -236,6 +245,7 @@ public class ChestLockListener implements Listener {
         Set<UUID> trustedPlayersUUID = TrustManager.getTrustedPlayers(ownerUUID);
         return player.getUniqueId().equals(ownerUUID) || trustedPlayersUUID.contains(player.getUniqueId());
     }
+
     /**
      * Compares UUID of the sign owner and a player UUID
      */
@@ -243,35 +253,40 @@ public class ChestLockListener implements Listener {
         UUID ownerUUID = getLockedSignOwner(attachedSign);
         return player.getUniqueId().equals(ownerUUID);
     }
+
     /**
      * Checking if player has admin permissions to bypass
      */
     private boolean canPlayerBypass(Player player) {
         return player.hasPermission("smp.bypasslocks") || player.isOp();
     }
+
     /**
      * Returns if player is sign owner or admin
      */
-    private boolean playerCanBreak(Player player, Sign attachedSign) {
+    private boolean playerCanInteract(Player player, Sign attachedSign) {
         return isPlayerOwner(player, attachedSign) || canPlayerBypass(player);
     }
-    /**
-     * Returns if player is sign owner or admin
-     */
-    private boolean playerCanPlaceHopper(Player player, Sign attachedSign) {
-        return isPlayerOwner(player, attachedSign) || canPlayerBypass(player);
-    }
+
     /**
      * Returns if block is an item from the STORAGE_CONTAINERS set
      */
     private boolean isStorageContainer(Material material) {
         return STORAGE_CONTAINERS.contains(material);
     }
+
     /**
      * Checks if sign has [Lock] on any line
      */
-    private boolean hasLockLine(SignChangeEvent event) {
-        return Arrays.stream(event.getLines())
-                .anyMatch("[Lock]"::equalsIgnoreCase);
+    private boolean hasLockLine(Sign sign) {
+        for (Side side : Side.values()) {
+            boolean hasLock = Arrays.stream(sign.getSide(side).getLines())
+                    .anyMatch("[Lock]"::equalsIgnoreCase);
+            if (hasLock) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
