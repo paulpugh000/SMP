@@ -42,13 +42,12 @@ public class ChestLockListener implements Listener {
         World world = player.getWorld();
         Location signLocation = sign.getLocation();
 
-
         if (isLockedSign(sign) && !playerHasAccess(player, sign)) {
             sendMessageAndCancel(event, player, "&cYou cannot edit this locked sign!");
             return;
         }
 
-        if (hasLockLine(sign) && isLockableSign(block)) {
+        if (hasLockLine(event) && isLockableSign(block)) {
             event.setLine(0, LOCKED_TAG);
             event.setLine(1, player.getName());
             event.setLine(2, "");
@@ -61,6 +60,8 @@ public class ChestLockListener implements Listener {
 
             sign.getPersistentDataContainer().set(SMPUtils.OWNER_UUID_KEY, PersistentDataType.STRING, player.getUniqueId().toString());
             sign.update();
+        } else {
+            Bukkit.broadcastMessage("hasLockLine failed");
         }
     }
 
@@ -278,15 +279,8 @@ public class ChestLockListener implements Listener {
     /**
      * Checks if sign has [Lock] on any line
      */
-    private boolean hasLockLine(Sign sign) {
-        for (Side side : Side.values()) {
-            boolean hasLock = Arrays.stream(sign.getSide(side).getLines())
-                    .anyMatch("[Lock]"::equalsIgnoreCase);
-            if (hasLock) {
-                return true;
-            }
-        }
-
-        return false;
+    private boolean hasLockLine(SignChangeEvent event) {
+        return Arrays.stream(event.getLines())
+                .anyMatch("[Lock]"::equalsIgnoreCase);
     }
 }
