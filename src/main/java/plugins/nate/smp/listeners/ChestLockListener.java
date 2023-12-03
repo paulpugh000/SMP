@@ -4,7 +4,6 @@ import org.bukkit.*;
 import org.bukkit.block.*;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.WallSign;
-import org.bukkit.block.sign.Side;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.event.block.Action;
@@ -23,7 +22,6 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.bukkit.block.sign.Side.FRONT;
 import static plugins.nate.smp.utils.ChatUtils.*;
 
 public class ChestLockListener implements Listener {
@@ -60,8 +58,6 @@ public class ChestLockListener implements Listener {
 
             sign.getPersistentDataContainer().set(SMPUtils.OWNER_UUID_KEY, PersistentDataType.STRING, player.getUniqueId().toString());
             sign.update();
-        } else {
-            Bukkit.broadcastMessage("hasLockLine failed");
         }
     }
 
