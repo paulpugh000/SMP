@@ -14,7 +14,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.Plugin;
 import plugins.nate.smp.SMP;
 
-import static plugins.nate.smp.utils.ChatUtils.coloredChat;
+import static plugins.nate.smp.utils.ChatUtils.*;
 
 public class SMPUtils {
     public static final NamespacedKey OWNER_UUID_KEY = new NamespacedKey(SMP.getPlugin(), "ownerUUID");
@@ -34,8 +34,8 @@ public class SMPUtils {
             NametagManager.updateNametag(p);
         }
 
-        sender.sendMessage(coloredChat(ChatUtils.PREFIX + "&aPlugin reloaded"));
-        log(coloredChat("[SMP] Reloaded SMP v" + smp.getDescription().getVersion()));
+        sendMessage(sender, PREFIX + "&aPlugin reloaded");
+        log("[SMP] Reloaded SMP v" + smp.getDescription().getVersion());
     }
 
     public static CoreProtectAPI loadCoreProtect() {

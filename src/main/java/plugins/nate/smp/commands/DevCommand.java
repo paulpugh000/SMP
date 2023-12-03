@@ -1,7 +1,6 @@
 package plugins.nate.smp.commands;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
@@ -17,7 +16,6 @@ import org.jetbrains.annotations.NotNull;
 import plugins.nate.smp.SMP;
 import plugins.nate.smp.enchantments.CustomEnchant;
 import plugins.nate.smp.managers.EnchantmentManager;
-import plugins.nate.smp.utils.AutoRestarter;
 import plugins.nate.smp.utils.ChatUtils;
 
 import java.util.*;
@@ -130,50 +128,6 @@ public class DevCommand implements CommandExecutor, TabCompleter {
             } else {
                 sendMessage(player, ChatUtils.DEV_PREFIX + "Enchantment: " + enchantment.getName());
             }
-        } else if (args[0].equalsIgnoreCase("nextrestart")) {
-            long millisUntilRestart = AutoRestarter.getTimeUntilRestart();
-            long secondsUntilRestart = millisUntilRestart / 1000;
-            long minutesUntilRestart = secondsUntilRestart / 60;
-            long hoursUntilRestart = minutesUntilRestart / 60;
-            minutesUntilRestart %= 60;
-            secondsUntilRestart %= 60;
-
-            StringBuilder resultString = new StringBuilder(ChatUtils.DEV_PREFIX);
-            resultString.append("Time until restart: ");
-
-            if (hoursUntilRestart > 0) {
-                resultString.append(hoursUntilRestart);
-                resultString.append(" hour");
-                if (hoursUntilRestart > 1) {
-                    resultString.append("s");
-                }
-            }
-
-            if (!resultString.isEmpty()) {
-                resultString.append(", ");
-            }
-
-            if (minutesUntilRestart > 0) {
-                resultString.append(minutesUntilRestart);
-                resultString.append(" minute");
-                if (minutesUntilRestart > 1) {
-                    resultString.append("s");
-                }
-            }
-
-            if (!resultString.isEmpty()) {
-                resultString.append(", ");
-            }
-
-            if (secondsUntilRestart > 0) {
-                resultString.append(secondsUntilRestart);
-                resultString.append(" second");
-                if (secondsUntilRestart > 1) {
-                    resultString.append("s");
-                }
-            }
-
-            sendMessage(player, resultString.toString());
         } else if (args[0].equalsIgnoreCase("forcerestart")) {
             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "restart");
         } else {

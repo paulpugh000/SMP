@@ -18,6 +18,9 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static plugins.nate.smp.utils.ChatUtils.PREFIX;
+import static plugins.nate.smp.utils.ChatUtils.sendMessage;
+
 
 public class TimberListener implements Listener {
     private static final int MAX_BLOCKS = 192;
@@ -42,7 +45,7 @@ public class TimberListener implements Listener {
 
         Block block = event.getBlock();
         Material type = block.getType();
-
+      
         if (!isLog(type)) {
             return;
         }

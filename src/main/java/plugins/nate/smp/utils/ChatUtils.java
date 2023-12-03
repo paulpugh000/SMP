@@ -10,9 +10,7 @@ public class ChatUtils {
     public static final String SERVER_PREFIX = "&8&l[&c&lSERVER&8&l] &c";
     public static final String DENIED_COMMAND = "&cYou do not have access to this command";
 
-    public static String coloredChat(String message) { return ChatColor.translateAlternateColorCodes('&', message); }
-
     public static void sendMessage(CommandSender sender, String message) {
-        sender.sendMessage(coloredChat(message));
+        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
     }
 }

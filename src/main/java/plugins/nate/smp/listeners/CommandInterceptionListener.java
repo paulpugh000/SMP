@@ -11,6 +11,8 @@ import plugins.nate.smp.utils.NametagManager;
 import java.util.Arrays;
 import java.util.List;
 
+import static plugins.nate.smp.utils.ChatUtils.sendMessage;
+
 public class CommandInterceptionListener implements Listener {
 
     @EventHandler
@@ -34,7 +36,7 @@ public class CommandInterceptionListener implements Listener {
         commands.forEach(all -> {
             if (event.getMessage().toLowerCase().equalsIgnoreCase("/" + all.toLowerCase())) {
                 event.setCancelled(true);
-                p.sendMessage(ChatUtils.coloredChat("&rPlugins (1): &aSMP"));
+                sendMessage(p, "&rPlugins (1): &aSMP");
             }
         });
     }
