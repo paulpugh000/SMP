@@ -45,36 +45,22 @@ public class TimberListener implements Listener {
 
         Block block = event.getBlock();
         Material type = block.getType();
-
-        if (isLog(type)) {
-
-
-            if (isPlayerPlaced(block)) {
-                sendMessage(player, PREFIX + "&cYou cannot use Timber on player placed blocks!");
-                return;
-            }
-
-            List<ItemStack> drops = new ArrayList<>();
-            AtomicInteger blocksDestroyed = new AtomicInteger(0);
-            Set<Block> checkedBlocks = new HashSet<>();
-            destroyTree(block, drops, blocksDestroyed, checkedBlocks, player);
-
-            Map<Material, Integer> consolidatedDrops = drops.stream()
-                    .collect(Collectors.groupingBy(ItemStack::getType, Collectors.summingInt(ItemStack::getAmount)));
-
-            consolidatedDrops.forEach((material, amount) -> {
-                player.getWorld().dropItemNaturally(player.getLocation(), new ItemStack(material, amount));
-            });
+      
+        if (!isLog(type)) {
+            return;
         }
-    }
 
-    private boolean isPlayerPlaced(Block block) {
-        CoreProtectAPI coreProtect = SMPUtils.loadCoreProtect();
+        List<ItemStack> drops = new ArrayList<>();
+        AtomicInteger blocksDestroyed = new AtomicInteger(0);
+        Set<Block> checkedBlocks = new HashSet<>();
+        destroyTree(block, drops, blocksDestroyed, checkedBlocks, player);
 
-        if (coreProtect == null) return false;
+        Map<Material, Integer> consolidatedDrops = drops.stream()
+                .collect(Collectors.groupingBy(ItemStack::getType, Collectors.summingInt(ItemStack::getAmount)));
 
-        List<String[]> lookup = coreProtect.blockLookup(block, 6*30*24*60*60);
-        return lookup != null && lookup.stream().anyMatch(data -> data != null && data.length > 0);
+        consolidatedDrops.forEach((material, amount) -> {
+            player.getWorld().dropItemNaturally(player.getLocation(), new ItemStack(material, amount));
+        });
     }
 
     private boolean isLog(Material type) {
