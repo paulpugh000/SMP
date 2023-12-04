@@ -46,6 +46,12 @@ public class ChestLockListener implements Listener {
         }
 
         if (hasLockLine(event) && isLockableSign(block)) {
+            // If attached block isn't a storage container
+            if (!(isStorageContainer(getAttachedBlock(block).getType()))) {
+                sendMessage(player, PREFIX + "&cMust be placed directly on a storage container!");
+                return;
+            }
+
             event.setLine(0, LOCKED_TAG);
             event.setLine(1, player.getName());
             event.setLine(2, "");
@@ -183,14 +189,26 @@ public class ChestLockListener implements Listener {
      * Checks CARDINAL_FACES around block and returns the first wall sign found
      */
     private Sign scanForAttachedSign(Block block) {
-        return Arrays.stream(CARDINAL_FACES)
-                .map(block::getRelative)
-                .filter(otherBlock -> otherBlock.getBlockData() instanceof WallSign)
-                .filter(otherBlock -> otherBlock.getState() instanceof Sign)
-                .map(otherBlock -> (Sign) otherBlock.getState())
-                .filter(this::isLockedSign)
-                .findFirst()
-                .orElse(null);
+
+        for (BlockFace blockface : CARDINAL_FACES) {
+            // Grabs block in the relative position
+            Block otherblock = block.getRelative(blockface);
+            // If its not a WallSign,
+            if (!(otherblock.getBlockData() instanceof WallSign wallSign)) {
+                continue;
+            }
+
+            // If the WallSign found is not facing the same direction as the face its on
+            if (!(wallSign.getFacing().equals(blockface))) {
+                continue;
+            }
+
+            Sign sign = (Sign) otherblock.getState();
+            if (isLockedSign(sign)) {
+                return sign;
+            }
+        }
+        return null;
     }
 
     /**
