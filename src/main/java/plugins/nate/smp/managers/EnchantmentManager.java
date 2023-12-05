@@ -156,8 +156,8 @@ public class EnchantmentManager implements Listener {
             return;
         }
 
-        // Prevent merging if an item has no custom enchants.
-        if (!hasCustomEnchant(firstItem) || !hasCustomEnchant(secondItem)) {
+        // Prevent merging if both items have no custom enchants.
+        if (!hasCustomEnchant(firstItem) && !hasCustomEnchant(secondItem)) {
             return;
         }
 
