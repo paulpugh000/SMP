@@ -151,8 +151,8 @@ public class EnchantmentManager implements Listener {
             return;
         }
 
-        // Prevent merging if both items are of different types.
-        if (firstItem.getType() != secondItem.getType()) {
+        // Prevent merging if both items are of different types, and the second item isn't an enchanted book.
+        if (firstItem.getType() != secondItem.getType() && secondItem.getType() != Material.ENCHANTED_BOOK) {
             return;
         }
 
