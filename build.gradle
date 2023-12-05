@@ -45,3 +45,34 @@ processResources {
         expand props
     }
 }
+
+def localProperties = new File('local.properties')
+def externalOutputDir
+
+if (localProperties.exists()) {
+    def properties = new Properties()
+    localProperties.withInputStream { InputStream stream ->
+        properties.load(stream)
+    }
+
+    // To use this, create a local.properties file in the root directory of this project.
+    // Populate it with:
+    // TEST_SERVER_PLUGINS_DIRECTORY=
+    // Do not surround the string in quotes. Your build will now automatically be put into the test server.
+    externalOutputDir = properties.getProperty('TEST_SERVER_PLUGINS_DIRECTORY')
+}
+
+tasks.register('createExternalOutputDir') {
+    doLast {
+        if (externalOutputDir) {
+            file(externalOutputDir).mkdirs()
+        }
+    }
+}
+
+// Configure the jar task
+jar {
+    destinationDirectory = file(externalOutputDir)
+
+    dependsOn createExternalOutputDir
+}
