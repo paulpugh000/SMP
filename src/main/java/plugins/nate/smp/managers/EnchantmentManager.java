@@ -17,7 +17,9 @@ import plugins.nate.smp.enchantments.TimberEnchant;
 import plugins.nate.smp.enchantments.VeinMinerEnchant;
 
 import java.lang.reflect.Field;
+import java.sql.Array;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class EnchantmentManager implements Listener {
     // Maps for storing custom enchantments and their corresponding lore.
@@ -120,12 +122,27 @@ public class EnchantmentManager implements Listener {
      */
     @EventHandler
     public static void onAnvilPrepare(PrepareAnvilEvent event) {
-        // Retrieve the items in the first and second slots of the anvil.
+        // Retrieve the items in the first and second slots of the anvil, and what the item will be renamed to.
         ItemStack firstItem = event.getInventory().getItem(0);
         ItemStack secondItem = event.getInventory().getItem(1);
+        String renameText = event.getInventory().getRenameText();
 
-        // Return early if either slot is empty.
-        if (firstItem == null || secondItem == null) {
+        // Return early if the first slot is empty
+        if (firstItem == null) {
+            return;
+        }
+
+        if (secondItem == null) {
+            Map<Enchantment, Integer> customEnchants = getCustomEnchants(firstItem);
+            if (renameText != null && renameText.length() > 0 && hasCustomEnchant(firstItem)) {
+                ItemStack result = event.getResult();
+                if (result != null) {
+                    result.addEnchantments(customEnchants);
+                }
+                event.setResult(result);
+            }
+
+            // Return early if there's no rename text.
             return;
         }
 
@@ -134,8 +151,13 @@ public class EnchantmentManager implements Listener {
             return;
         }
 
-        // Prevent merging if both items have custom enchantments but are of different types.
-        if (hasCustomEnchant(firstItem) && hasCustomEnchant(secondItem) && firstItem.getType() != secondItem.getType()) {
+        // Prevent merging if both items are of different types, and the second item isn't an enchanted book.
+        if (firstItem.getType() != secondItem.getType() && secondItem.getType() != Material.ENCHANTED_BOOK) {
+            return;
+        }
+
+        // Prevent merging if both items have no custom enchants.
+        if (!hasCustomEnchant(firstItem) && !hasCustomEnchant(secondItem)) {
             return;
         }
 
@@ -166,8 +188,13 @@ public class EnchantmentManager implements Listener {
         List<String> resultLore = getCustomLore(mergedEnchantments);
         resultMeta.setLore(resultLore);
 
+        if (renameText != null && renameText.length() > 0) {
+            resultMeta.setDisplayName(renameText);
+        }
+
         // Finalize the result item by setting its metadata and setting it as the event's result.
         resultItem.setItemMeta(resultMeta);
+
         event.setResult(resultItem);
     }
 
@@ -178,20 +205,27 @@ public class EnchantmentManager implements Listener {
      * @return true if the item has a custom enchantment, false otherwise.
      */
     private static boolean hasCustomEnchant(@NotNull ItemStack item) {
-        if (item.getItemMeta() == null) {
-            return false;
-        }
+        return !getCustomEnchants(item).isEmpty();
+    }
 
-        for (Map.Entry<Enchantment, Integer> entry : item.getEnchantments().entrySet()) {
-            Enchantment enchantment = entry.getKey();
-            String enchantmentKey = enchantment.getKey().getKey();
-
-            if (ENCHANTMENTS.containsKey(enchantmentKey)) {
-                return true;
+    /**
+     * Gets a list of the custom enchantments and their level on an item.
+     *
+     * @param item The item to check for custom enchantments.
+     * @return map of custom enchantments on the item.
+     */
+    private static Map<Enchantment, Integer> getCustomEnchants(@NotNull ItemStack item) {
+        Map<Enchantment, Integer> enchants = new HashMap<>(item.getEnchantments());
+        List<Enchantment> toRemove = new ArrayList<>();
+        for (Enchantment enchant : enchants.keySet()) {
+            if (!ENCHANTMENTS.containsValue(enchant)) {
+                toRemove.add(enchant);
             }
         }
 
-        return false;
+        toRemove.forEach(enchants::remove);
+
+        return enchants;
     }
 
     /**
