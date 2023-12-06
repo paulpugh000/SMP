@@ -72,7 +72,9 @@ tasks.register('createExternalOutputDir') {
 
 // Configure the jar task
 jar {
-    destinationDirectory = file(externalOutputDir)
+    if (externalOutputDir) {
+        destinationDirectory = file(externalOutputDir)
+    }
 
     dependsOn createExternalOutputDir
 }
