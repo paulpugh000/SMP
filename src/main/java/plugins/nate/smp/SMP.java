@@ -12,6 +12,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import plugins.nate.smp.managers.EnchantmentManager;
+import plugins.nate.smp.managers.RecipeManager;
 import plugins.nate.smp.managers.TrustManager;
 import plugins.nate.smp.utils.*;
 
@@ -45,6 +46,7 @@ public final class SMP extends JavaPlugin {
         EventRegistration.registerEvents(this);
         CommandRegistration.registerCommands(this);
         EnchantmentManager.registerEnchants();
+        RecipeManager.registerRecipes();
 
         getPrefixes().options().copyDefaults(true);
         saveDefaultPrefixes();
