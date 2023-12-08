@@ -24,14 +24,14 @@ public class RecipeManager {
 
     private static void registerRocketRecipes() {
         for (Map.Entry<String, Integer> rocketRecipe : rocketIdentifierMap.entrySet()) {
-            ItemStack fourDurationRocket = new ItemStack(Material.FIREWORK_ROCKET, 3);
-            FireworkMeta meta = (FireworkMeta) fourDurationRocket.getItemMeta();
+            ItemStack longerDurationRocket = new ItemStack(Material.FIREWORK_ROCKET, 3);
+            FireworkMeta meta = (FireworkMeta) longerDurationRocket.getItemMeta();
             if (meta != null) {
                 meta.setPower(rocketRecipe.getValue());
             }
-            fourDurationRocket.setItemMeta(meta);
+            longerDurationRocket.setItemMeta(meta);
 
-            ShapelessRecipe recipe = new ShapelessRecipe(new NamespacedKey(SMP.getPlugin(), rocketRecipe.getKey()), fourDurationRocket);
+            ShapelessRecipe recipe = new ShapelessRecipe(new NamespacedKey(SMP.getPlugin(), rocketRecipe.getKey()), longerDurationRocket);
             recipe.addIngredient(rocketRecipe.getValue(), Material.GUNPOWDER);
             recipe.addIngredient(Material.PAPER);
             Bukkit.getServer().addRecipe(recipe);
