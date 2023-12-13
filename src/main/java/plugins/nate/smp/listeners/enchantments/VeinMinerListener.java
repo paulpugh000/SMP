@@ -4,14 +4,12 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
-import org.bukkit.inventory.meta.ItemMeta;
 import plugins.nate.smp.SMP;
 import plugins.nate.smp.managers.EnchantmentManager;
 import plugins.nate.smp.utils.SMPUtils;
@@ -20,14 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class VeinMinerListener implements Listener {
-    private static final BlockFace[] ADJACENT_BLOCK_FACES = {
-            BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST,
-            BlockFace.UP, BlockFace.DOWN,
-            BlockFace.NORTH_EAST, BlockFace.NORTH_WEST, BlockFace.SOUTH_EAST, BlockFace.SOUTH_WEST,
-            BlockFace.WEST_NORTH_WEST, BlockFace.NORTH_NORTH_WEST, BlockFace.NORTH_NORTH_EAST,
-            BlockFace.EAST_NORTH_EAST, BlockFace.EAST_SOUTH_EAST, BlockFace.SOUTH_SOUTH_EAST,
-            BlockFace.SOUTH_SOUTH_WEST, BlockFace.WEST_SOUTH_WEST
-    };
+    private static final Random RANDOM = new Random();
 
     private static final EnumSet<Material> ACCEPTABLE_BLOCKS = EnumSet.of(
             Material.IRON_ORE,
@@ -50,23 +41,73 @@ public class VeinMinerListener implements Listener {
             Material.NETHER_QUARTZ_ORE
     );
 
-    private static final Random RANDOM = new Random();
-
+    /**
+     * Event handler for block break events. This method will check if the block is acceptable for vein mining,
+     * and if the player meets the criteria, it will perform the vein mining logic.
+     *
+     * @param event The block break event from the server.
+     */
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         ItemStack tool = player.getInventory().getItemInMainHand();
 
-        if (player.getGameMode() != GameMode.CREATIVE &&
-                player.isSneaking() &&
-                tool.getEnchantments().containsKey(EnchantmentManager.getEnchantment("vein_miner")) &&
-                ACCEPTABLE_BLOCKS.contains(event.getBlock().getType())) {
+        if (!ACCEPTABLE_BLOCKS.contains(event.getBlock().getType())) {
+            SMPUtils.log("TEST1");
+            return;
+        }
 
-            Set<Block> blocksToBreak = collectBlocks(event.getBlock(), event.getBlock().getType());
-            breakBlocks(player, tool, blocksToBreak);
+        // Makes sure player is not in creative
+        if (player.getGameMode() == GameMode.CREATIVE) {
+            SMPUtils.log("TEST2");
+            return;
+        }
+
+        // Checks if the player is sneaking as vein miner is designed to only work when sneaking
+        if (!player.isSneaking()) {
+            SMPUtils.log("TEST3");
+            return;
+        }
+
+        // Checks to make sure the player has the VeinMiner enchantment
+        if (!tool.getEnchantments().containsKey(EnchantmentManager.getEnchantment("vein_miner"))) {
+            SMPUtils.log("TEST4");
+            return;
+        }
+
+        Set<Block> blocksToBreak = collectBlocks(event.getBlock(), event.getBlock().getType());
+        int totalXpFromBlocks = 0;
+
+        for (Block block : blocksToBreak) {
+
+            totalXpFromBlocks += calculateXpDrop(block);
+
+            Collection<ItemStack> drops = block.getDrops(tool);
+            block.setType(Material.AIR, false);
+
+            addCoreProtectLog(block, player);
+
+            drops.forEach(drop -> block.getWorld().dropItemNaturally(block.getLocation(), drop));
+        }
+
+        if (totalXpFromBlocks > 0) {
+            /*
+            * The setExperience() method requires a "final" or "effectively final" variable,
+            *  as totalXpfromBlocks has been modified it errors out.
+            * */
+            final int finalTotalXpFromBlocks = totalXpFromBlocks;
+            event.getBlock().getWorld().spawn(event.getBlock().getLocation(), ExperienceOrb.class, orb -> orb.setExperience(finalTotalXpFromBlocks));
         }
     }
 
+    /**
+     * Collects all blocks of the same type that are connected to the starting block up to a maximum number.
+     * It uses a breadth-first search algorithm to find all connected blocks.
+     *
+     * @param start The starting block from which to begin collecting blocks.
+     * @param material The type of material to match for block collection.
+     * @return A set of blocks that are connected to the starting block and have the same material.
+     */
     private Set<Block> collectBlocks(Block start, Material material) {
         Queue<Block> blocksToCheck = new LinkedList<>();
         Set<Block> collectedBlocks = new HashSet<>();
@@ -85,43 +126,55 @@ public class VeinMinerListener implements Listener {
         return collectedBlocks;
     }
 
+
+    /**
+     * Retrieves all adjacent blocks around a given center block.
+     *
+     * @param center The block from which adjacent blocks are to be found.
+     * @return A set of blocks adjacent to the center block.
+     */
     private Set<Block> getAdjacentBlocks(Block center) {
-        return Arrays.stream(ADJACENT_BLOCK_FACES)
+        return Arrays.stream(BlockFace.values())
                 .map(center::getRelative)
                 .collect(Collectors.toSet());
     }
 
-    private void breakBlocks(Player player, ItemStack tool, Set<Block> blocks) {
-        ItemMeta meta = tool.getItemMeta();
-        if (!(meta instanceof Damageable damageable)) {
-            return;
-        }
-
-        int unbreakingLevel = tool.getEnchantmentLevel(Enchantment.DURABILITY);
-
-        blocks.forEach(block -> {
-            addCoreProtectLog(block, player);
-
-            float chance = RANDOM.nextFloat();
-            if (chance >= ((float) unbreakingLevel / (unbreakingLevel + 1))) {
-                int damage = damageable.getDamage() + 1;
-                if (damage < tool.getType().getMaxDurability()) {
-                    damageable.setDamage(damage);
-                    tool.setItemMeta(damageable);
-                    player.getInventory().setItemInMainHand(tool);
-                } else {
-                    player.getInventory().setItemInMainHand(null);
-                    return;
-                }
-            }
-            block.breakNaturally();
-        });
-    }
-
+    /**
+     * Logs the block removal with CoreProtect. If the logging fails, an error message is logged.
+     *
+     * @param block The block that was removed.
+     * @param player The player who removed the block.
+     */
     private void addCoreProtectLog(Block block, Player player) {
         boolean success = SMP.getCoreProtect().logRemoval(player.getName(), block.getLocation(), block.getType(), block.getBlockData());
         if (!success) {
             SMPUtils.log("Failed to log block removal with CoreProtect!");
         }
+    }
+
+    /**
+     * Calculates the amount of experience that should drop when a block is broken.
+     * The amount is determined based on the type of the block.
+     *
+     * @param block The block for which to calculate experience drop.
+     * @return The amount of experience to drop.
+     */
+    private static int calculateXpDrop(Block block) {
+        Material type = block.getType();
+        int xp = 0;
+        switch (type) {
+            case COAL_ORE, DEEPSLATE_COAL_ORE -> xp = RANDOM.nextInt(3);
+            case DIAMOND_ORE,
+                 DEEPSLATE_DIAMOND_ORE,
+                 EMERALD_ORE,
+                 DEEPSLATE_EMERALD_ORE ->
+                    xp = 3 + RANDOM.nextInt(5);
+            case LAPIS_ORE, DEEPSLATE_LAPIS_ORE, NETHER_QUARTZ_ORE -> xp = 2 + RANDOM.nextInt(4);
+            case REDSTONE_ORE, DEEPSLATE_REDSTONE_ORE -> xp = 1 + RANDOM.nextInt(5);
+            default -> {
+            }
+        }
+
+        return xp;
     }
 }
