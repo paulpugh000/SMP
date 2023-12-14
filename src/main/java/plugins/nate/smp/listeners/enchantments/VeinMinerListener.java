@@ -4,22 +4,17 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
-import plugins.nate.smp.SMP;
 import plugins.nate.smp.managers.EnchantmentManager;
-import plugins.nate.smp.utils.SMPUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class VeinMinerListener implements Listener {
-    private static final Random RANDOM = new Random();
-
     private static final EnumSet<Material> ACCEPTABLE_BLOCKS = EnumSet.of(
             Material.IRON_ORE,
             Material.COAL_ORE,
@@ -41,63 +36,70 @@ public class VeinMinerListener implements Listener {
             Material.NETHER_QUARTZ_ORE
     );
 
+    private static final Set<Player> veinmining = new HashSet<>();
+
     /**
-     * Event handler for block break events. This method will check if the block is acceptable for vein mining,
-     * and if the player meets the criteria, it will perform the vein mining logic.
+     * Handles the BlockBreakEvent to implement custom vein mining logic. This method checks whether the
+     * broken block meets certain criteria for vein mining and performs the vein mining process if applicable.
+     * It is designed to avoid stack overflow issues which can arise when the event handler recursively triggers
+     * the same event.
+     *
+     * <p>Stack overflow prevention is achieved through the following mechanisms:</p>
+     *
+     * <ul>
+     *     <li><strong>Tracking Vein Mining State:</strong> The {@code veinmining} set is used to track players who
+     *     are currently engaging in vein mining. It prevents recursive processing of the BlockBreakEvent for the same
+     *     player, which is crucial in preventing stack overflow.</li>
+     *     <li><strong>Sequential Block Breaking:</strong> The vein mining process breaks all related blocks in a
+     *     sequence, rather than recursively. This sequential approach avoids triggering new instances of
+     *     BlockBreakEvent for the same player during vein mining.</li>
+     *     <li><strong>Guard Conditions:</strong> Several conditions are checked (e.g., player game mode, sneaking
+     *     status, tool enchantment) before initiating the vein mining process, ensuring that it only occurs under
+     *     appropriate circumstances.</li>
+     * </ul>
      *
      * @param event The block break event from the server.
      */
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
-        ItemStack tool = player.getInventory().getItemInMainHand();
+
+        // Check if the player is already engaged in vein mining. If so, exit to prevent recursive processing.
+        if (veinmining.contains(player)) {
+            return;
+        }
 
         if (!ACCEPTABLE_BLOCKS.contains(event.getBlock().getType())) {
-            SMPUtils.log("TEST1");
             return;
         }
 
         // Makes sure player is not in creative
         if (player.getGameMode() == GameMode.CREATIVE) {
-            SMPUtils.log("TEST2");
             return;
         }
 
         // Checks if the player is sneaking as vein miner is designed to only work when sneaking
         if (!player.isSneaking()) {
-            SMPUtils.log("TEST3");
             return;
         }
+
+        ItemStack tool = player.getInventory().getItemInMainHand();
 
         // Checks to make sure the player has the VeinMiner enchantment
         if (!tool.getEnchantments().containsKey(EnchantmentManager.getEnchantment("vein_miner"))) {
-            SMPUtils.log("TEST4");
             return;
         }
 
+        // Add the player to the veinmining set to mark the start of the vein mining process and prevent recursion.
+        veinmining.add(player);
+
+        // Collect and break related blocks as part of the vein mining process.
         Set<Block> blocksToBreak = collectBlocks(event.getBlock(), event.getBlock().getType());
-        int totalXpFromBlocks = 0;
+        blocksToBreak.remove(event.getBlock());
+        breakBlocks(player, tool, blocksToBreak);
 
-        for (Block block : blocksToBreak) {
-
-            totalXpFromBlocks += calculateXpDrop(block);
-
-            Collection<ItemStack> drops = block.getDrops(tool);
-            block.setType(Material.AIR, false);
-
-            addCoreProtectLog(block, player);
-
-            drops.forEach(drop -> block.getWorld().dropItemNaturally(block.getLocation(), drop));
-        }
-
-        if (totalXpFromBlocks > 0) {
-            /*
-            * The setExperience() method requires a "final" or "effectively final" variable,
-            *  as totalXpfromBlocks has been modified it errors out.
-            * */
-            final int finalTotalXpFromBlocks = totalXpFromBlocks;
-            event.getBlock().getWorld().spawn(event.getBlock().getLocation(), ExperienceOrb.class, orb -> orb.setExperience(finalTotalXpFromBlocks));
-        }
+        // Remove the player from the veinmining set to mark the end of the vein mining process.
+        veinmining.remove(player);
     }
 
     /**
@@ -126,6 +128,28 @@ public class VeinMinerListener implements Listener {
         return collectedBlocks;
     }
 
+    /**
+     * Breaks a set of blocks for a given player using a specific tool. This method is designed to programmatically
+     * break each block in the provided set. It ensures that the player still holds the same tool that was used to
+     * initiate the breaking process throughout the operation. If the player changes the tool in the main hand, the
+     * process is aborted to maintain consistency and prevent unintended behavior.
+     *
+     * @param player The player who is breaking the blocks.
+     * @param tool   The tool used by the player to break the blocks. This method checks that the player continues
+     *               to hold this tool in their main hand during the block breaking process.
+     * @param blocks The set of blocks to be broken. Each block in this set will be broken as long as the player
+     *               continues to hold the specified tool.
+     */
+    private void breakBlocks(Player player, ItemStack tool, Set<Block> blocks) {
+        blocks.forEach(block -> {
+            if (!player.getInventory().getItemInMainHand().equals(tool)) {
+                return;
+            }
+
+            player.breakBlock(block);
+        });
+    }
+
 
     /**
      * Retrieves all adjacent blocks around a given center block.
@@ -137,44 +161,5 @@ public class VeinMinerListener implements Listener {
         return Arrays.stream(BlockFace.values())
                 .map(center::getRelative)
                 .collect(Collectors.toSet());
-    }
-
-    /**
-     * Logs the block removal with CoreProtect. If the logging fails, an error message is logged.
-     *
-     * @param block The block that was removed.
-     * @param player The player who removed the block.
-     */
-    private void addCoreProtectLog(Block block, Player player) {
-        boolean success = SMP.getCoreProtect().logRemoval(player.getName(), block.getLocation(), block.getType(), block.getBlockData());
-        if (!success) {
-            SMPUtils.log("Failed to log block removal with CoreProtect!");
-        }
-    }
-
-    /**
-     * Calculates the amount of experience that should drop when a block is broken.
-     * The amount is determined based on the type of the block.
-     *
-     * @param block The block for which to calculate experience drop.
-     * @return The amount of experience to drop.
-     */
-    private static int calculateXpDrop(Block block) {
-        Material type = block.getType();
-        int xp = 0;
-        switch (type) {
-            case COAL_ORE, DEEPSLATE_COAL_ORE -> xp = RANDOM.nextInt(3);
-            case DIAMOND_ORE,
-                 DEEPSLATE_DIAMOND_ORE,
-                 EMERALD_ORE,
-                 DEEPSLATE_EMERALD_ORE ->
-                    xp = 3 + RANDOM.nextInt(5);
-            case LAPIS_ORE, DEEPSLATE_LAPIS_ORE, NETHER_QUARTZ_ORE -> xp = 2 + RANDOM.nextInt(4);
-            case REDSTONE_ORE, DEEPSLATE_REDSTONE_ORE -> xp = 1 + RANDOM.nextInt(5);
-            default -> {
-            }
-        }
-
-        return xp;
     }
 }
