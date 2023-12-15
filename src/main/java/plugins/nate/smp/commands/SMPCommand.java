@@ -73,7 +73,7 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
             sign.getSide(Side.FRONT).setLine(0, "[Locked]");
             sign.getSide(Side.FRONT).setLine(1, offlinePlayer.getName());
             sign.update();
-        }else if (args[0].equalsIgnoreCase("help")) {
+        } else if (args[0].equalsIgnoreCase("help")) {
             sendMessage(sender, "&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------");
             sendMessage(sender, "&a/smp help &7- Displays this menu");
             sendMessage(sender, "&a/smp features &7- Display the unique features of the server");
