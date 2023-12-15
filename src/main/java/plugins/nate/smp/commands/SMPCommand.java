@@ -2,8 +2,13 @@ package plugins.nate.smp.commands;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Block;
+import org.bukkit.block.Container;
+import org.bukkit.block.Sign;
+import org.bukkit.block.sign.Side;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import plugins.nate.smp.managers.TrustManager;
 import plugins.nate.smp.utils.ChatUtils;
@@ -15,7 +20,7 @@ import java.util.stream.Collectors;
 import static plugins.nate.smp.utils.ChatUtils.sendMessage;
 
 public class SMPCommand implements CommandExecutor, TabCompleter {
-    private static final Set<String> VALID_SUBCOMMANDS = Set.of("help", "features", "reload", "trust", "untrust", "trustlist");
+    private static final Set<String> VALID_SUBCOMMANDS = Set.of("help", "features", "reload", "forcelock", "trust", "untrust", "trustlist", "lock", "unlock");
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
@@ -40,7 +45,35 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
             }
 
             SMPUtils.reloadPlugin(sender);
-        } else if (args[0].equalsIgnoreCase("help")) {
+        } else if (args[0].equalsIgnoreCase("forcelock")) {
+            if (!(sender instanceof Player player)) {
+                sendMessage(sender, "&cOnly players can use this command!");
+                return true;
+            }
+            if (!sender.hasPermission("smp.forcelock") && !sender.isOp()) {
+                sendMessage(sender, ChatUtils.PREFIX + ChatUtils.DENIED_COMMAND);
+                return true;
+            }
+            if (args.length == 1) {
+                sendMessage(sender, ChatUtils.PREFIX + "&cUsage: /smp forcelock <username>");
+                return true;
+            }
+            if (Bukkit.getOfflinePlayer(args[1]).hasPlayedBefore() == false) {
+                sendMessage(sender, ChatUtils.PREFIX + "&c" + args[1] + " is not a valid player!");
+                return true;
+            }
+            Block targetBlock = player.getTargetBlock(null, 5);
+            if (!(targetBlock.getState() instanceof Sign sign)) {
+                sendMessage(sender, ChatUtils.PREFIX + "&cMust be a targeting a sign.");
+                return true;
+            }
+            sendMessage(sender, ChatUtils.PREFIX + "&aLocking sign for " + args[1]);
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
+            sign.getPersistentDataContainer().set(SMPUtils.OWNER_UUID_KEY, PersistentDataType.STRING, offlinePlayer.getUniqueId().toString());
+            sign.getSide(Side.FRONT).setLine(0, "[Locked]");
+            sign.getSide(Side.FRONT).setLine(1, offlinePlayer.getName());
+            sign.update();
+        }else if (args[0].equalsIgnoreCase("help")) {
             sendMessage(sender, "&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------");
             sendMessage(sender, "&a/smp help &7- Displays this menu");
             sendMessage(sender, "&a/smp features &7- Display the unique features of the server");
