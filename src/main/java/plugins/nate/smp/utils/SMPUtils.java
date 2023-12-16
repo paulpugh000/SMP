@@ -9,12 +9,12 @@ import net.coreprotect.CoreProtect;
 import net.coreprotect.CoreProtectAPI;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.Plugin;
 import plugins.nate.smp.SMP;
 
-import static plugins.nate.smp.utils.ChatUtils.*;
+import static plugins.nate.smp.utils.ChatUtils.PREFIX;
+import static plugins.nate.smp.utils.ChatUtils.sendMessage;
 
 public class SMPUtils {
     public static final NamespacedKey OWNER_UUID_KEY = new NamespacedKey(SMP.getPlugin(), "ownerUUID");
@@ -29,10 +29,6 @@ public class SMPUtils {
 
         EventRegistration.registerEvents(smp);
         CommandRegistration.registerCommands(smp);
-
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            NametagManager.updateNametag(p);
-        }
 
         sendMessage(sender, PREFIX + "&aPlugin reloaded");
         log("[SMP] Reloaded SMP v" + smp.getDescription().getVersion());
