@@ -38,28 +38,6 @@ public class VeinMinerListener implements Listener {
 
     private static final Set<Player> veinmining = new HashSet<>();
 
-    /**
-     * Handles the BlockBreakEvent to implement custom vein mining logic. This method checks whether the
-     * broken block meets certain criteria for vein mining and performs the vein mining process if applicable.
-     * It is designed to avoid stack overflow issues which can arise when the event handler recursively triggers
-     * the same event.
-     *
-     * <p>Stack overflow prevention is achieved through the following mechanisms:</p>
-     *
-     * <ul>
-     *     <li><strong>Tracking Vein Mining State:</strong> The {@code veinmining} set is used to track players who
-     *     are currently engaging in vein mining. It prevents recursive processing of the BlockBreakEvent for the same
-     *     player, which is crucial in preventing stack overflow.</li>
-     *     <li><strong>Sequential Block Breaking:</strong> The vein mining process breaks all related blocks in a
-     *     sequence, rather than recursively. This sequential approach avoids triggering new instances of
-     *     BlockBreakEvent for the same player during vein mining.</li>
-     *     <li><strong>Guard Conditions:</strong> Several conditions are checked (e.g., player game mode, sneaking
-     *     status, tool enchantment) before initiating the vein mining process, ensuring that it only occurs under
-     *     appropriate circumstances.</li>
-     * </ul>
-     *
-     * @param event The block break event from the server.
-     */
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
@@ -94,7 +72,7 @@ public class VeinMinerListener implements Listener {
         veinmining.add(player);
 
         // Collect and break related blocks as part of the vein mining process.
-        Set<Block> blocksToBreak = collectBlocks(event.getBlock(), event.getBlock().getType());
+        Map<Block, Double> blocksToBreak = collectBlocks(player, event.getBlock(), event.getBlock().getType());
         blocksToBreak.remove(event.getBlock());
         breakBlocks(player, tool, blocksToBreak);
 
@@ -102,61 +80,41 @@ public class VeinMinerListener implements Listener {
         veinmining.remove(player);
     }
 
-    /**
-     * Collects all blocks of the same type that are connected to the starting block up to a maximum number.
-     * It uses a breadth-first search algorithm to find all connected blocks.
-     *
-     * @param start The starting block from which to begin collecting blocks.
-     * @param material The type of material to match for block collection.
-     * @return A set of blocks that are connected to the starting block and have the same material.
-     */
-    private Set<Block> collectBlocks(Block start, Material material) {
+    private Map<Block, Double> collectBlocks(Player player, Block start, Material material) {
+        Map<Block, Double> blockDistanceMap = new HashMap<>();
         Queue<Block> blocksToCheck = new LinkedList<>();
-        Set<Block> collectedBlocks = new HashSet<>();
         blocksToCheck.add(start);
 
+
         int MAX_BLOCKS = 128;
-        while(!blocksToCheck.isEmpty() && collectedBlocks.size() < MAX_BLOCKS) {
+        while(!blocksToCheck.isEmpty() && blockDistanceMap.size() < MAX_BLOCKS) {
             Block current = blocksToCheck.poll();
-            collectedBlocks.add(current);
+            double distance = current.getLocation().distance(player.getLocation());
+            blockDistanceMap.put(current, distance);
+
             getAdjacentBlocks(current).stream()
                     .filter(block -> block.getType() == material)
-                    .filter(block -> !collectedBlocks.contains(block))
+                    .filter(block -> !blockDistanceMap.containsKey(block))
                     .forEach(blocksToCheck::add);
         }
 
-        return collectedBlocks;
+        return blockDistanceMap;
     }
 
-    /**
-     * Breaks a set of blocks for a given player using a specific tool. This method is designed to programmatically
-     * break each block in the provided set. It ensures that the player still holds the same tool that was used to
-     * initiate the breaking process throughout the operation. If the player changes the tool in the main hand, the
-     * process is aborted to maintain consistency and prevent unintended behavior.
-     *
-     * @param player The player who is breaking the blocks.
-     * @param tool   The tool used by the player to break the blocks. This method checks that the player continues
-     *               to hold this tool in their main hand during the block breaking process.
-     * @param blocks The set of blocks to be broken. Each block in this set will be broken as long as the player
-     *               continues to hold the specified tool.
-     */
-    private void breakBlocks(Player player, ItemStack tool, Set<Block> blocks) {
-        blocks.forEach(block -> {
+    private void breakBlocks(Player player, ItemStack tool, Map<Block, Double> blockDistanceMap) {
+        Iterator<Map.Entry<Block, Double>> iterator = blockDistanceMap.entrySet().stream()
+                        .sorted(Map.Entry.comparingByValue())
+                        .iterator();
+
+        while (iterator.hasNext()) {
             if (!player.getInventory().getItemInMainHand().equals(tool)) {
-                return;
+                break;
             }
 
-            player.breakBlock(block);
-        });
+            player.breakBlock(iterator.next().getKey());
+        }
     }
 
-
-    /**
-     * Retrieves all adjacent blocks around a given center block.
-     *
-     * @param center The block from which adjacent blocks are to be found.
-     * @return A set of blocks adjacent to the center block.
-     */
     private Set<Block> getAdjacentBlocks(Block center) {
         return Arrays.stream(BlockFace.values())
                 .map(center::getRelative)
