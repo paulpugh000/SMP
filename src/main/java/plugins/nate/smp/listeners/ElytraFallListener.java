@@ -17,6 +17,7 @@ public class ElytraFallListener implements Listener {
         } else {
             ElytraGlidingTracker.gliding.remove(p);
             ElytraGlidingTracker.lastLocationMap.remove(p);
+            ElytraGlidingTracker.calculatedDamageMap.remove(p);
         }
     }
 
