@@ -1,11 +1,13 @@
 package plugins.nate.smp.listeners;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import plugins.nate.smp.SMP;
 import plugins.nate.smp.managers.ElytraGlidingTracker;
 
 public class ElytraFallListener implements Listener {
@@ -17,6 +19,18 @@ public class ElytraFallListener implements Listener {
         } else {
             ElytraGlidingTracker.gliding.remove(p);
             ElytraGlidingTracker.lastLocationMap.remove(p);
+
+            //This seems hacky, but is more or less necessary.
+            //PlayerMoveEvent seems to always happen before EntityDamageEvent,
+            //so we schedule calculated damage to get voided next tick. This means
+            //if your elytra breaks mid-air, or you land in water, that no
+            //weird edge cases happen and calculatedDamage is always removed one way
+            //or another.
+            if (ElytraGlidingTracker.calculatedDamageMap.containsKey(p)) {
+                Bukkit.getServer().getScheduler().runTaskLater(SMP.getPlugin(), () -> {
+                    ElytraGlidingTracker.calculatedDamageMap.remove(p);
+                }, 1L);
+            }
         }
     }
 
