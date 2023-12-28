@@ -6,10 +6,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 import plugins.nate.smp.records.PlayerPoint;
 import plugins.nate.smp.SMP;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Purpose of this class:
@@ -28,57 +28,52 @@ import java.util.Set;
  * <a href="https://bugs.mojang.com/browse/MC-210371">See more about this bug</a>
  */
 public class ElytraGlidingTracker {
-    public static Set<Player> gliding = new HashSet<>();
-    public static HashMap<Player, Double> calculatedDamageMap = new HashMap<>();
-    public static Map<Player, PlayerPoint> lastLocationMap = new HashMap<>();
+    public static final Set<Player> gliding = new CopyOnWriteArraySet<>();
+    public static final ConcurrentHashMap<Player, Double> calculatedDamageMap = new ConcurrentHashMap<>();
+    public static final ConcurrentHashMap<Player, PlayerPoint> lastLocationMap = new ConcurrentHashMap<>();
 
     public static void startTracking() {
         new BukkitRunnable() {
             @Override
             public void run() {
-                for (Player player : gliding) {
-                    if (!lastLocationMap.containsKey(player)) {
-                        //If we don't have a last location, we can't calculate the speed over time.
-                        //So, just insert their current location and move on.
-                        lastLocationMap.put(player, new PlayerPoint(player.getLocation(), System.currentTimeMillis()));
-                        continue;
-                    }
-
-                    PlayerPoint playerPoint = lastLocationMap.get(player);
-
-                    Location lastLocation = playerPoint.location();
-                    if (player.getLocation().getWorld() != lastLocation.getWorld()) {
-                        lastLocationMap.remove(player);
-                        continue;
-                    }
-
-                    double distance = lastLocation.distance(player.getLocation());
-                    if (distance == 0) {
-                        continue;
-                    }
-
-                    //Gets how long since we last calculated damage between two locations.
-                    long elapsedTime = System.currentTimeMillis() - playerPoint.time();
-                    if (elapsedTime == 0) {
-                        continue;
-                    }
-
-                    //Change in Y between player's current location and their "last" location
-                    //(About a tick, but really varies between 49-51ms)
-                    double deltaY = Math.abs(lastLocation.getY() - player.getLocation().getY());
-                    double verticalSpeed = deltaY / elapsedTime;
-
-                    //Derived from fall damage values.
-                    //A 4 block fall (the first one that damages you) has a vertical speed of ~0.013
-                    //A 24 block fall (first lethal fall height) has a vertical speed of ~0.032
-                    //Extrapolating between these two points, you can create the slope formula
-                    //y = 1052.63x - 12.68 where x is vertical speed.
-                    double calculatedDamage = 1052.63 * verticalSpeed - 12.68;
-
-                    calculatedDamageMap.put(player, calculatedDamage);
-                    lastLocationMap.put(player, new PlayerPoint(player.getLocation(), System.currentTimeMillis()));
-                }
+                gliding.forEach(ElytraGlidingTracker::processPlayer);
             }
         }.runTaskTimer(SMP.getPlugin(), 0L, 1L);
+    }
+
+    private static void processPlayer(Player player) {
+        PlayerPoint lastPoint = lastLocationMap.get(player);
+        Location currentLocation = player.getLocation();
+
+        if (lastPoint == null || !Objects.equals(currentLocation.getWorld(), lastPoint.location().getWorld())) {
+            lastLocationMap.put(player, new PlayerPoint(currentLocation, System.currentTimeMillis()));
+            return;
+        }
+
+        double distance = lastPoint.location().distance(currentLocation);
+        if (distance == 0) {
+            return;
+        }
+
+        long elapsedTime = System.currentTimeMillis() - lastPoint.time();
+        if (elapsedTime == 0) {
+            return;
+        }
+
+        double deltaY = Math.abs(lastPoint.location().getY() - currentLocation.getY());
+        double verticalSpeed = deltaY / elapsedTime;
+
+        double calculatedDamage = calculateDamage(verticalSpeed);
+        calculatedDamageMap.put(player, calculatedDamage);
+        lastLocationMap.put(player, new PlayerPoint(currentLocation, System.currentTimeMillis()));
+    }
+
+    private static double calculateDamage(double verticalSpeed) {
+        //Derived from fall damage values.
+        //A 4 block fall (the first one that damages you) has a vertical speed of ~0.013
+        //A 24 block fall (first lethal fall height) has a vertical speed of ~0.032
+        //Extrapolating between these two points, you can create the slope formula
+        //y = 1052.63x - 12.68, where x is vertical speed.
+        return 1052.63 * verticalSpeed - 12.68;
     }
 }
