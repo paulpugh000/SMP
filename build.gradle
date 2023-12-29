@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'plugins.nate'
-version = '1.5.1'
+version = '1.5.9'
 
 repositories {
     mavenCentral()
