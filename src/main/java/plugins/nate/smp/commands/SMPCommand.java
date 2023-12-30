@@ -112,7 +112,7 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
                     // Storing UUID of the villager it's bound to
                     text.getPersistentDataContainer().set(SMPUtils.PARENT_TELLER_KEY, PersistentDataType.STRING, teller.getUniqueId().toString());
                     text.setBillboard(Billboard.CENTER);
-                    text.setText("ᴅᴇᴘᴏsɪᴛ ᴅɪᴀᴍᴏɴᴅs (Đ)");
+                    text.setText("ᴅᴇᴘᴏsɪᴛ ᴅɪᴀᴍᴏɴᴅs ("+ '\u00D0' + ")");
                 });
 
                 sendMessage(sender, ChatUtils.PREFIX + "&7Spawning a &adeposit &7teller.");
@@ -130,7 +130,7 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
                     // Storing UUID of the villager it's bound to                    
                     text.getPersistentDataContainer().set(SMPUtils.PARENT_TELLER_KEY, PersistentDataType.STRING, teller.getUniqueId().toString());
                     text.setBillboard(Billboard.CENTER);
-                    text.setText("ᴡɪᴛʜᴅʀᴀᴡ ᴅɪᴀᴍᴏɴᴅs (Đ)");
+                    text.setText("ᴡɪᴛʜᴅʀᴀᴡ ᴅɪᴀᴍᴏɴᴅs ("+ '\u00D0' + ")");
                 });
 
                 sendMessage(sender, ChatUtils.PREFIX + "&7Spawning a &awithdraw &7teller.");
