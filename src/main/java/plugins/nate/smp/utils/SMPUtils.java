@@ -1,5 +1,17 @@
 package plugins.nate.smp.utils;
 
+import static plugins.nate.smp.utils.ChatUtils.PREFIX;
+import static plugins.nate.smp.utils.ChatUtils.sendMessage;
+
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.World;
+import org.bukkit.command.CommandSender;
+import org.bukkit.event.HandlerList;
+import org.bukkit.plugin.Plugin;
+
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
@@ -7,18 +19,13 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import net.coreprotect.CoreProtect;
 import net.coreprotect.CoreProtectAPI;
-import org.bukkit.*;
-import org.bukkit.command.CommandSender;
-import org.bukkit.event.HandlerList;
-import org.bukkit.plugin.Plugin;
 import plugins.nate.smp.SMP;
-
-import static plugins.nate.smp.utils.ChatUtils.PREFIX;
-import static plugins.nate.smp.utils.ChatUtils.sendMessage;
 
 public class SMPUtils {
     public static final NamespacedKey OWNER_UUID_KEY = new NamespacedKey(SMP.getPlugin(), "ownerUUID");
     public static final NamespacedKey TRADE_LOCKED_KEY = new NamespacedKey(SMP.getPlugin(), "tradeLocked");
+    public static final NamespacedKey TELLER_TYPE_KEY = new NamespacedKey(SMP.getPlugin(), "tellerType");
+    public static final NamespacedKey PARENT_TELLER_KEY = new NamespacedKey(SMP.getPlugin(), "parentTeller");
 
     public static void reloadPlugin(CommandSender sender) {
         SMP smp = SMP.getPlugin();
