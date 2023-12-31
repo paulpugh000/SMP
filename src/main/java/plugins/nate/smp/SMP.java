@@ -11,10 +11,7 @@ import plugins.nate.smp.managers.ElytraGlidingTracker;
 import plugins.nate.smp.managers.EnchantmentManager;
 import plugins.nate.smp.managers.RecipeManager;
 import plugins.nate.smp.managers.TrustManager;
-import plugins.nate.smp.utils.CommandRegistration;
-import plugins.nate.smp.utils.DependencyUtils;
-import plugins.nate.smp.utils.EventRegistration;
-import plugins.nate.smp.utils.SMPUtils;
+import plugins.nate.smp.utils.*;
 
 import java.io.File;
 import java.util.logging.Logger;
@@ -40,6 +37,7 @@ public final class SMP extends JavaPlugin {
 
         DependencyUtils.checkDependencies();
         EventRegistration.registerEvents(this);
+        VaultUtils.setupEconomy(this);
         CommandRegistration.registerCommands(this);
         EnchantmentManager.registerEnchants();
         RecipeManager.registerRecipes();
@@ -66,6 +64,7 @@ public final class SMP extends JavaPlugin {
     public static CoreProtectAPI getCoreProtect() {
         return coreProtect;
     }
+
 
 }
 
