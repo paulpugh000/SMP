@@ -20,7 +20,6 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.persistence.PersistentDataType;
 import org.joml.Math;
 import plugins.nate.smp.SMP;
@@ -37,26 +36,19 @@ import static plugins.nate.smp.utils.TellerUtils.CURRENCY_SYMBOL;
 
 
 public class TellerTradeListener implements Listener {
-    private enum SOUND_EFFECTS {
-        SUCCESS, ERROR, NEUTRAL 
-    }
+    private enum SOUND_EFFECTS { SUCCESS, ERROR, NEUTRAL }
     
     @EventHandler
     public void onTellerInteract(PlayerInteractEntityEvent event) {
         Entity clickedEntity = event.getRightClicked();
-        if (clickedEntity.getType() != EntityType.VILLAGER) {
+        if (clickedEntity.getType() != EntityType.VILLAGER || TellerUtils.isTeller(clickedEntity)) {
             return;
         }
 
-        if (!clickedEntity.getPersistentDataContainer().has(TellerUtils.TELLER_TYPE_KEY, PersistentDataType.STRING)) {
-            return;
-        }
         event.setCancelled(true);
 
         Player player = event.getPlayer();
-        PlayerInventory inventory = player.getInventory();
-        String tellerKey = clickedEntity.getPersistentDataContainer().get(TellerUtils.TELLER_TYPE_KEY, PersistentDataType.STRING);
-
+        String tellerKey = TellerUtils.getTellerKey(clickedEntity);
 
         if (tellerKey == null || tellerKey.equals("")) {
             SMPUtils.severe(player.getName() + " tried to interact with a null teller at location X: " +

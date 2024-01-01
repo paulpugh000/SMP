@@ -46,4 +46,12 @@ public class TellerUtils {
     public static boolean isWithdrawTeller(Entity entity) {
         return "WITHDRAW".equals(entity.getPersistentDataContainer().get(TELLER_TYPE_KEY, PersistentDataType.STRING));
     }
+
+    public static boolean isTeller(Entity entity) {
+        return entity.getPersistentDataContainer().has(TellerUtils.TELLER_TYPE_KEY, PersistentDataType.STRING);
+    }
+
+    public static String getTellerKey(Entity entity) {
+        return entity.getPersistentDataContainer().get(TellerUtils.TELLER_TYPE_KEY, PersistentDataType.STRING);
+    }
 }
