@@ -38,4 +38,12 @@ public class TellerUtils {
             displayText.setText(text);
         });
     }
+
+    public static boolean isDepositTeller(Entity entity) {
+        return "DEPOSIT".equals(entity.getPersistentDataContainer().get(TELLER_TYPE_KEY, PersistentDataType.STRING));
+    }
+
+    public static boolean isWithdrawTeller(Entity entity) {
+        return "WITHDRAW".equals(entity.getPersistentDataContainer().get(TELLER_TYPE_KEY, PersistentDataType.STRING));
+    }
 }
