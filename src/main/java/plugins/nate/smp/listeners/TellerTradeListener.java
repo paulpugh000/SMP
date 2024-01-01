@@ -88,6 +88,10 @@ public class TellerTradeListener implements Listener {
         }
     }
 
+    /*
+    * Handlers player action bar when moving within a region with the bank allow flag
+    * */
+
     @EventHandler
     public void onPlayerMoveIntoBankRegion(PlayerMoveEvent event) {
         Player player = event.getPlayer();
@@ -110,8 +114,9 @@ public class TellerTradeListener implements Listener {
 
         if (isBankRegion) {
             double balance = VaultUtils.econ.getBalance(player);
+            String formattedBalance = String.format("%.2f", balance);
 
-            createActionBar(player, "&7Balance: &a" + balance + CURRENCY_SYMBOL);
+            createActionBar(player, "&7Balance: &a" + formattedBalance + CURRENCY_SYMBOL);
         } else {
             player.sendTitle("", "", 0, 0, 0);
         }
@@ -120,6 +125,7 @@ public class TellerTradeListener implements Listener {
     /*
      * Methods for handling deposits
      * */
+
     private void handleDeposit(Player player) {
         player.openInventory(new TellerDepositGUI().getInventory());
     }
