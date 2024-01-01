@@ -41,7 +41,7 @@ public class TellerTradeListener implements Listener {
     @EventHandler
     public void onTellerInteract(PlayerInteractEntityEvent event) {
         Entity clickedEntity = event.getRightClicked();
-        if (clickedEntity.getType() != EntityType.VILLAGER || TellerUtils.isTeller(clickedEntity)) {
+        if (clickedEntity.getType() != EntityType.VILLAGER || !TellerUtils.isTeller(clickedEntity)) {
             return;
         }
 
