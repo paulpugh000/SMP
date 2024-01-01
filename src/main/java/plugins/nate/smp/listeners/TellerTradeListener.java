@@ -183,7 +183,7 @@ public class TellerTradeListener implements Listener {
             if (clickedItem != null && clickedItem.getType() != Material.DIAMOND && clickedItem.getType() != Material.DIAMOND_BLOCK) {
                 event.setCancelled(true);
                 sendMessage(player, PREFIX + "&cYou can only deposit diamonds or diamond blocks.");
-                playSound(player, player.getLocation(), SOUND_EFFECTS.ERROR);
+                playSound(player, SOUND_EFFECTS.ERROR);
             }
         }
     }
@@ -196,7 +196,8 @@ public class TellerTradeListener implements Listener {
         double playerBalance = VaultUtils.getBalance(player);
 
         if (playerBalance < 1.0) {
-            // Send insufficient funds message
+            sendMessage(player, PREFIX + "&cYou have no funds to withdraw!");
+            playSound(player, SOUND_EFFECTS.ERROR);
             return;
         }
 
@@ -225,7 +226,7 @@ public class TellerTradeListener implements Listener {
 
         if (!player.getInventory().addItem(withdrawalItem).isEmpty()) {
             sendMessage(player, PREFIX + "&cYou don't have enough inventory space.");
-            playSound(player, player.getLocation(), SOUND_EFFECTS.ERROR);
+            playSound(player, SOUND_EFFECTS.ERROR);
             return;
         }
 
@@ -241,13 +242,13 @@ public class TellerTradeListener implements Listener {
     * Helper methods
     * */
 
-    private void playSound(Player player, Location location, SOUND_EFFECTS sound) {
+    private void playSound(Player player, SOUND_EFFECTS sound) {
         if (sound == SOUND_EFFECTS.SUCCESS) {
-            player.playSound(location, Sound.BLOCK_NOTE_BLOCK_XYLOPHONE, 0.5f, 0f);
+            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_XYLOPHONE, 0.5f, 0f);
         } else if (sound == SOUND_EFFECTS.NEUTRAL) {
-            player.playSound(location, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, 0.5f, 0f);
+            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASEDRUM, 0.5f, 0f);
         } else if (sound == SOUND_EFFECTS.ERROR) {
-            player.playSound(location, Sound.BLOCK_NOTE_BLOCK_DIDGERIDOO, 0.5f, 0f);
+            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_DIDGERIDOO, 0.5f, 0f);
         }
     }
 
