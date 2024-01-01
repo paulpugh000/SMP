@@ -8,18 +8,19 @@ import plugins.nate.smp.SMP;
 public class TellerUtils {
     public static final NamespacedKey TELLER_TYPE_KEY = new NamespacedKey(SMP.getPlugin(), "tellerType");
     public static final NamespacedKey PARENT_TELLER_KEY = new NamespacedKey(SMP.getPlugin(), "parentTeller");
+    public static char CURRENCY_SYMBOL = '\u00D0';
 
     public static void createDepositTeller(Player player) {
         player.getWorld().spawn(player.getLocation(), Villager.class, (villager) -> {
             configureTeller(villager, "DEPOSIT", player);
-            createTextDisplay(player, villager, "Deposit Diamonds (" + '\u00D0' + ")");
+            createTextDisplay(player, villager, "Deposit Diamonds (" + CURRENCY_SYMBOL + ")");
         });
     }
 
     public static void createWithdrawTeller(Player player) {
         player.getWorld().spawn(player.getLocation(), Villager.class, (villager) -> {
             configureTeller(villager, "WITHDRAW", player);
-            createTextDisplay(player, villager, "Withdraw Diamonds (" + '\u00D0' + ")");
+            createTextDisplay(player, villager, "Withdraw Diamonds (" + CURRENCY_SYMBOL + ")");
         });
     }
 

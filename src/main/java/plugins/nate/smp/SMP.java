@@ -21,6 +21,7 @@ public final class SMP extends JavaPlugin {
     private static CoreProtectAPI coreProtect;
 
     public static StateFlag WITHER_EXPLOSIONS;
+    public static StateFlag BANK_FLAG;
 
     public static final Logger logger = Logger.getLogger("Minecraft");
     public final File prefixesFile = new File(getDataFolder() + "/prefixes.yml");
@@ -51,9 +52,13 @@ public final class SMP extends JavaPlugin {
         FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();
         try {
             StateFlag witherExplosionsFlag = new StateFlag("wither-explosions", true);
+            StateFlag bankFlag = new StateFlag("bank", false);
+
             registry.register(witherExplosionsFlag);
+            registry.register(bankFlag);
 
             WITHER_EXPLOSIONS = witherExplosionsFlag;
+            BANK_FLAG = bankFlag;
         } catch (FlagConflictException ignored) {}
     }
 

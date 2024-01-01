@@ -1,5 +1,11 @@
 package plugins.nate.smp.listeners;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.sk89q.worldguard.protection.managers.RegionManager;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -8,16 +14,18 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.persistence.PersistentDataType;
-import plugins.nate.smp.utils.ChatUtils;
+import plugins.nate.smp.SMP;
 import plugins.nate.smp.utils.TellerUtils;
 import plugins.nate.smp.utils.VaultUtils;
 
 import java.util.Optional;
 
-import static plugins.nate.smp.utils.ChatUtils.sendMessage;
+import static plugins.nate.smp.utils.ChatUtils.*;
+import static plugins.nate.smp.utils.TellerUtils.CURRENCY_SYMBOL;
 
 
 public class TellerTradeListener implements Listener {
@@ -26,7 +34,7 @@ public class TellerTradeListener implements Listener {
     }
     
     @EventHandler
-    public void onTellerInterract(PlayerInteractEntityEvent event) {
+    public void onTellerInteract(PlayerInteractEntityEvent event) {
         Entity clickedEntity = event.getRightClicked();
         if (clickedEntity.getType() != EntityType.VILLAGER) {
             return;
@@ -45,7 +53,7 @@ public class TellerTradeListener implements Listener {
         switch (tellerKey.toLowerCase()) {
             case "withdraw" -> handleWithdraw(player, inventory, playerBalance, clickedEntity);
             case "deposit" -> handleDeposit(player, inventory, clickedEntity);
-            default -> sendMessage(player, ChatUtils.PREFIX + "&cThis teller does not have a valid TELLER_KEY. Contact an admin.");
+            default -> sendMessage(player, PREFIX + "&cThis teller does not have a valid TELLER_KEY. Contact an admin.");
         }
     }
 
@@ -73,6 +81,35 @@ public class TellerTradeListener implements Listener {
         }
     }
 
+    @EventHandler
+    public void onPlayerMoveIntoBankRegion(PlayerMoveEvent event) {
+        Player player = event.getPlayer();
+
+        if (event.getFrom().getBlock().equals(event.getTo().getBlock())) {
+            return;
+        }
+
+        RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(player.getWorld()));
+
+        if (regionManager == null) {
+            return;
+        }
+
+        Location loc = player.getLocation();
+        BlockVector3 position = BlockVector3.at(loc.getX(), loc.getY(), loc.getZ());
+
+        ApplicableRegionSet regionSet = regionManager.getApplicableRegions(position);
+        boolean isBankRegion = regionSet.queryState(null, SMP.BANK_FLAG) == StateFlag.State.ALLOW;
+
+        if (isBankRegion) {
+            double balance = VaultUtils.econ.getBalance(player);
+
+            createActionBar(player, "&7Balance: &a" + balance + CURRENCY_SYMBOL);
+        } else {
+            player.sendTitle("", "", 0, 0, 0);
+        }
+    }
+
     private void playSound(Player player, Location location, SOUND_EFFECTS sound) {
         if (sound == SOUND_EFFECTS.SUCCESS) {
             player.playSound(location, Sound.BLOCK_NOTE_BLOCK_XYLOPHONE, 0.5f, 0f);
@@ -89,11 +126,25 @@ public class TellerTradeListener implements Listener {
             return;
         }
 
-        ItemStack withdrawalItem = (playerBalance < 9.0) ? new ItemStack(Material.DIAMOND) : new ItemStack(Material.DIAMOND_BLOCK);
-        double amountToWithdraw = (playerBalance < 9.0) ? 1.0 : 9.0;
+        double amountToWithdraw;
+        ItemStack withdrawalItem;
+
+        if (player.isSneaking()) {
+            int maxBlocks = (int) Math.max(playerBalance / 9.0, 64);
+            withdrawalItem = new ItemStack(Material.DIAMOND_BLOCK, maxBlocks);
+            amountToWithdraw = maxBlocks * 9.0;
+        } else {
+            if (playerBalance < 9.0) {
+                withdrawalItem = new ItemStack(Material.DIAMOND);
+                amountToWithdraw = 1.0;
+            } else {
+                withdrawalItem = new ItemStack(Material.DIAMOND_BLOCK);
+                amountToWithdraw = 9.0;
+            }
+        }
 
         if (!inventory.addItem(withdrawalItem).isEmpty()) {
-            sendMessage(player, ChatUtils.PREFIX + "&cYou don't have enough inventory space.");
+            sendMessage(player, PREFIX + "&cYou don't have enough inventory space.");
             playSound(player, clickedEntity.getLocation(), SOUND_EFFECTS.ERROR);
             return;
         }
@@ -103,31 +154,29 @@ public class TellerTradeListener implements Listener {
     }
 
     private void handleDeposit(Player player, PlayerInventory inventory, Entity clickedEntity) {
-        Material depositMaterial = inventory.contains(Material.DIAMOND_BLOCK) ? Material.DIAMOND_BLOCK : Material.DIAMOND;
-        if (!inventory.contains(depositMaterial)) {
-            sendMessage(player, ChatUtils.PREFIX + "&7You don't have anything to deposit.");
+        ItemStack itemInHand = inventory.getItemInMainHand();
+
+        if (itemInHand.getType() == Material.DIAMOND_BLOCK || itemInHand.getType() == Material.DIAMOND_BLOCK) {
+            int amountToDeposit = player.isSneaking() ? itemInHand.getAmount() : 1;
+            double depositValue = calculateDepositValue(itemInHand.getType(), amountToDeposit);
+
+            VaultUtils.econ.depositPlayer(player, depositValue);
+
+            if (player.isSneaking()) {
+                inventory.setItemInMainHand(new ItemStack(Material.AIR));
+            } else {
+                itemInHand.setAmount(itemInHand.getAmount() - 1);
+            }
+
+            sendSuccessMessage(player, clickedEntity, "deposit", amountToDeposit);
             playSound(player, clickedEntity.getLocation(), SOUND_EFFECTS.NEUTRAL);
-            return;
-        }
-
-        int diamondIndex = inventory.first(depositMaterial);
-        ItemStack diamondStack = inventory.getItem(diamondIndex);
-        int amountToDeposit = depositMaterial == Material.DIAMOND_BLOCK ? diamondStack.getAmount() * 9 : diamondStack.getAmount();
-
-        if (player.isSneaking() && inventory.getItemInMainHand().isSimilar(diamondStack)) {
-            inventory.setItemInMainHand(new ItemStack(Material.AIR));
         } else {
-            diamondStack.setAmount(diamondStack.getAmount() - 1);
-            inventory.setItem(diamondIndex, diamondStack);
-            amountToDeposit = depositMaterial == Material.DIAMOND_BLOCK ? 9 : 1;
+            sendMessage(player, PREFIX + "&cYou can only deposit diamonds or diamond blocks.");
         }
-
-        VaultUtils.econ.depositPlayer(player, amountToDeposit);
-        sendSuccessMessage(player, clickedEntity, "deposit", amountToDeposit);
     }
 
     private void sendInsufficientFundsMessage(Player player, Entity clickedEntity) {
-        sendMessage(player, ChatUtils.PREFIX + "&7You don't have enough funds.");
+        sendMessage(player, PREFIX + "&7You don't have enough funds.");
         playSound(player, clickedEntity.getLocation(), SOUND_EFFECTS.NEUTRAL);
     }
 
@@ -135,7 +184,7 @@ public class TellerTradeListener implements Listener {
         String message = action.equals("withdraw") ?
                 "&aSuccessfully withdrew " + formatAmount(amount) :
                 "&aSuccessfully deposited " + formatAmount(amount);
-        sendMessage(player, ChatUtils.PREFIX + message);
+        sendMessage(player, PREFIX + message);
         playSound(player, clickedEntity.getLocation(), SOUND_EFFECTS.SUCCESS);
     }
 
@@ -149,6 +198,15 @@ public class TellerTradeListener implements Listener {
         } else {
             return truncatedAmount + " diamonds";
         }
+    }
+
+    private double calculateDepositValue(Material material, int amount) {
+        if (material == Material.DIAMOND) {
+            return amount * 1.0;
+        } else if (material == Material.DIAMOND_BLOCK) {
+            return amount * 9.0;
+        }
+        return 0;
     }
 
 }
