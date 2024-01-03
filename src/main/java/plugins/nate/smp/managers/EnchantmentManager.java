@@ -17,9 +17,10 @@ import plugins.nate.smp.enchantments.TimberEnchant;
 import plugins.nate.smp.enchantments.VeinMinerEnchant;
 
 import java.lang.reflect.Field;
-import java.sql.Array;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class EnchantmentManager implements Listener {
     // Maps for storing custom enchantments and their corresponding lore.
@@ -205,7 +206,17 @@ public class EnchantmentManager implements Listener {
      * @return true if the item has a custom enchantment, false otherwise.
      */
     private static boolean hasCustomEnchant(@NotNull ItemStack item) {
-        return !getCustomEnchants(item).isEmpty();
+        if (item.getType() == Material.ENCHANTED_BOOK) {
+            EnchantmentStorageMeta meta = (EnchantmentStorageMeta) item.getItemMeta();
+
+            if (meta == null) {
+                return false;
+            }
+
+            return meta.hasStoredEnchants();
+        } else {
+            return !getCustomEnchants(item).isEmpty();
+        }
     }
 
     /**
