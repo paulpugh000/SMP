@@ -8,7 +8,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
-import org.bukkit.event.inventory.PrepareSmithingEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -200,33 +199,6 @@ public class EnchantmentManager implements Listener {
         event.setResult(resultItem);
     }
 
-    @EventHandler
-    public void onPrepareSmithingTable(PrepareSmithingEvent event) {
-        ItemStack firstItem = event.getInventory().getItem(0);
-        ItemStack secondItem = event.getInventory().getItem(1);
-        ItemStack thirdItem = event.getInventory().getItem(2);
-
-        if (firstItem == null || firstItem.getType() != Material.NETHERITE_UPGRADE_SMITHING_TEMPLATE) {
-            return;
-        }
-
-        if (secondItem == null) {
-            return;
-        }
-
-        if (thirdItem == null) {
-            return;
-        }
-
-        ItemStack resultItem = event.getResult();
-
-        if (resultItem == null) {
-            return;
-        }
-
-        event.setResult(setEnchantments(resultItem));
-    }
-
     /**
      * Checks if an item has a custom enchantment.
      *
@@ -309,20 +281,6 @@ public class EnchantmentManager implements Listener {
         }
 
         return customLore;
-    }
-
-    private static ItemStack setEnchantments(@NotNull ItemStack item) {
-        ItemMeta meta = item.getItemMeta();
-
-        Map<Enchantment, Integer> itemEnchants = item.getEnchantments();
-
-        meta.getEnchants().keySet().forEach(meta::removeEnchant);
-
-        itemEnchants.forEach((enchantment, level) -> meta.addEnchant(enchantment, level, true));
-
-        item.setItemMeta(meta);
-
-        return item;
     }
 }
 
