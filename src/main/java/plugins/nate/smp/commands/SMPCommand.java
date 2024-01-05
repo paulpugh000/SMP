@@ -28,15 +28,6 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length == 0) {
             handleNoArguments(sender);
-            sendMessage(sender, "&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------");
-            sendMessage(sender, "&aWelcome to the CoolmentSMP! This server is driven by public");
-            sendMessage(sender, "&aand private plugins to give the best experience possible.");
-            sendMessage(sender, "&aThe SMP plugin is main driver of this server and is meant to");
-            sendMessage(sender, "&aprovide a vanilla-esque experience. With additions in and out");
-            sendMessage(sender, "&aof game, including QoL additions and Discord integration. ");
-            sendMessage(sender, "&aIf you have any feature requests or issues contact staff");
-            sendMessage(sender, "&aon our Discord. Thank you and have fun!");
-            sendMessage(sender, "&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------");
         }
 
         switch(args[0].toLowerCase()) {
