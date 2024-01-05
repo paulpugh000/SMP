@@ -17,7 +17,7 @@ public class WitherExplosionListener implements Listener {
         if (event.getEntityType() == EntityType.WITHER || event.getEntityType() == EntityType.WITHER_SKULL) {
             List<Block> toRemove = event.blockList().stream()
                     .filter(Objects::nonNull)
-                    .filter(block -> !SMPUtils.isFlagAllowedAtLocation(SMP.WITHER_EXPLOSIONS, block.getLocation()))
+                    .filter(block -> SMPUtils.isFlagDisallowedAtLocation(SMP.WITHER_EXPLOSIONS, block.getLocation()))
                     .toList();
 
             event.blockList().removeAll(toRemove);

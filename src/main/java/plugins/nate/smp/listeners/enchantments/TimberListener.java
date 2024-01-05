@@ -1,5 +1,7 @@
 package plugins.nate.smp.listeners.enchantments;
 
+import com.sk89q.worldguard.protection.flags.Flags;
+import com.sk89q.worldguard.protection.flags.StateFlag;
 import net.coreprotect.CoreProtectAPI;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -45,7 +47,7 @@ public class TimberListener implements Listener {
 
         Block block = event.getBlock();
         Material type = block.getType();
-      
+
         if (!isLog(type)) {
             return;
         }
@@ -68,6 +70,10 @@ public class TimberListener implements Listener {
     }
 
     private void destroyTree(Block block, List<ItemStack> drops, AtomicInteger blocksDestroyed, Set<Block> checkedBlocks, Player player) {
+        if (SMPUtils.isFlagDisallowedAtLocation(Flags.BLOCK_BREAK, block.getLocation())) {
+            return;
+        }
+
         if (blocksDestroyed.get() >= MAX_BLOCKS || !isLog(block.getType()) || block.getType() == Material.AIR || checkedBlocks.contains(block)) {
             return;
         }
