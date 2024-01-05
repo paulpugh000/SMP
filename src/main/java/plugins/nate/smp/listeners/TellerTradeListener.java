@@ -174,7 +174,8 @@ public class TellerTradeListener implements Listener {
 
         Inventory clickedInventory = event.getView().getTopInventory();
 
-        if (clickedInventory.getHolder() instanceof TellerDepositGUI) {
+        if (clickedInventory.getHolder() instanceof TellerDepositGUI ||
+            clickedInventory.getHolder() instanceof TellerWithdrawGUI) {
             Player player = (Player) event.getWhoClicked();
 
             ItemStack clickedItem = event.getCurrentItem();
