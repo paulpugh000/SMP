@@ -52,7 +52,7 @@ public class SMPUtils {
         SMP.getPlugin().getLogger().info(log);
     }
 
-    public static boolean isFlagAllowedAtLocation(StateFlag flag, Location location) {
+    public static boolean isFlagDisallowedAtLocation(StateFlag flag, Location location) {
         World world = location.getWorld();
         if (world == null) { return false; }
 
@@ -60,7 +60,7 @@ public class SMPUtils {
         if (firstRegionManager == null) { return false; }
 
         ApplicableRegionSet firstSet = firstRegionManager.getApplicableRegions(BukkitAdapter.asBlockVector(location));
-        return firstSet.testState(null, flag);
+        return firstSet.queryState(null, flag) == StateFlag.State.DENY;
     }
 
     public static boolean isPickaxe(Material material) {
