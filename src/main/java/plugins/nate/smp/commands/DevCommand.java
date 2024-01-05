@@ -25,14 +25,6 @@ import static plugins.nate.smp.utils.ChatUtils.sendMessage;
 public class DevCommand implements CommandExecutor, TabCompleter {
     private static final Set<String> VALID_SUBCOMMANDS = Set.of("setdurability", "forcerestart", "nextrestart", "customenchant", "findenchant");
 
-    private static final List<UUID> AUTHORIZED_UUIDS = Arrays.asList(
-            // NitrogenAtom
-            UUID.fromString("38ee2126-4d91-4dbe-86fe-2e8c94320056"),
-
-            // Doogar
-            UUID.fromString("b42a0052-0760-49b8-bf22-af5016994822")
-    );
-
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player player)) {
@@ -40,7 +32,7 @@ public class DevCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        if (!AUTHORIZED_UUIDS.contains(player.getUniqueId())) {
+        if (!player.isOp()) {
             sendMessage(player, ChatUtils.PREFIX + ChatUtils.DENIED_COMMAND);
             return true;
         }
@@ -139,7 +131,7 @@ public class DevCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        if (!(sender instanceof Player player) || !AUTHORIZED_UUIDS.contains(player.getUniqueId())) {
+        if (!(sender instanceof Player player) || !player.isOp()) {
             return null;
         }
 
