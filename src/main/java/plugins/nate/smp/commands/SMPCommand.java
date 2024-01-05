@@ -28,6 +28,7 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length == 0) {
             handleNoArguments(sender);
+            return true;
         }
 
         switch(args[0].toLowerCase()) {
