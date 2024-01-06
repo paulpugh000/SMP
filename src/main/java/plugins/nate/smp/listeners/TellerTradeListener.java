@@ -6,6 +6,8 @@ import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.managers.RegionManager;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -15,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.Inventory;
@@ -167,7 +170,7 @@ public class TellerTradeListener implements Listener {
     }
 
     @EventHandler
-    public void onDepositGUIClick(InventoryClickEvent event) {
+    public void onTellerGUIClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player)) {
             return;
         }
@@ -185,6 +188,18 @@ public class TellerTradeListener implements Listener {
                 playSound(player, SOUND_EFFECTS.ERROR);
             }
         }
+    }
+
+    // Used to prevent a bug where players can drop items they dont have the funds for anymore
+    @EventHandler 
+    public void onTellerGUIToss(PlayerDropItemEvent event) {
+        Player player = event.getPlayer();
+        if (!(hasTellerInventoryOpen(player))) {
+            return; 
+        }
+        event.setCancelled(true);
+        sendMessage(player, PREFIX + "&cYou can't drop items while interracting with a teller.");
+        playSound(player, SOUND_EFFECTS.ERROR);
     }
 
     @EventHandler
@@ -261,6 +276,19 @@ public class TellerTradeListener implements Listener {
     /*
     * Helper methods
     * */
+
+    private boolean hasTellerInventoryOpen(Player player) {
+        if (player.getOpenInventory() == null) {
+            return false;
+        }
+        Inventory topInventory = player.getOpenInventory().getTopInventory();
+        if (topInventory.getHolder() instanceof TellerDepositGUI ||
+            topInventory.getHolder() instanceof TellerWithdrawGUI) {
+                return true;
+        }
+        return false;
+    }
+
 
     /**
      * Creates an action bar to display a player their balance
