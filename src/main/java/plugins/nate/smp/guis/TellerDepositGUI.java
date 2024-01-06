@@ -12,7 +12,7 @@ public class TellerDepositGUI implements CustomGUI {
 
     public TellerDepositGUI() {
         this.key = new NamespacedKey(SMP.getPlugin(), "deposit_gui");
-        this.inventory = Bukkit.createInventory(this, 27, "Deposit Diamonds");
+        this.inventory = Bukkit.createInventory(this, 36, "Deposit Diamonds");
     }
 
     @Override
