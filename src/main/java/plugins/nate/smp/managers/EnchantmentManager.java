@@ -178,7 +178,6 @@ public class EnchantmentManager implements Listener {
 
     private static Map<Enchantment, Integer> getCustomEnchants(@NotNull ItemStack item) {
         if (item.getItemMeta() instanceof EnchantmentStorageMeta meta) {
-
             return meta.getStoredEnchants().entrySet().stream()
                     .filter(entry -> ENCHANTMENTS.containsValue(entry.getKey()))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
