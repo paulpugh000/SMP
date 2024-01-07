@@ -135,7 +135,7 @@ public class EnchantmentManager implements Listener {
 
         if (secondItem == null) {
             Map<Enchantment, Integer> customEnchants = getCustomEnchants(firstItem);
-            if (renameText != null && renameText.length() > 0 && hasCustomEnchant(firstItem)) {
+            if (renameText != null && renameText.length() > 0 && hasEnchant(firstItem)) {
                 ItemStack result = event.getResult();
                 if (result != null) {
                     result.addEnchantments(customEnchants);
@@ -158,7 +158,7 @@ public class EnchantmentManager implements Listener {
         }
 
         // Prevent merging if both items have no custom enchants.
-        if (!hasCustomEnchant(firstItem) && !hasCustomEnchant(secondItem)) {
+        if (!hasEnchant(firstItem) && !hasEnchant(secondItem)) {
             return;
         }
 
@@ -167,7 +167,7 @@ public class EnchantmentManager implements Listener {
 
         // Determine the result item. Clone the first item if the second item has a custom enchantment or if the default result is null.
         ItemStack resultItem = event.getResult();
-        if (resultItem == null || hasCustomEnchant(secondItem)) {
+        if (resultItem == null || hasEnchant(secondItem)) {
             resultItem = firstItem.clone();
         }
 
@@ -205,7 +205,7 @@ public class EnchantmentManager implements Listener {
      * @param item The item to check for custom enchantments.
      * @return true if the item has a custom enchantment, false otherwise.
      */
-    private static boolean hasCustomEnchant(@NotNull ItemStack item) {
+    private static boolean hasEnchant(@NotNull ItemStack item) {
         if (item.getType() == Material.ENCHANTED_BOOK) {
             EnchantmentStorageMeta meta = (EnchantmentStorageMeta) item.getItemMeta();
 
