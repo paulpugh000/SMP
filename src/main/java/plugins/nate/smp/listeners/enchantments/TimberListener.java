@@ -61,7 +61,7 @@ public class TimberListener implements Listener {
                 .collect(Collectors.groupingBy(ItemStack::getType, Collectors.summingInt(ItemStack::getAmount)));
 
         consolidatedDrops.forEach((material, amount) -> {
-            player.getWorld().dropItemNaturally(player.getLocation(), new ItemStack(material, amount));
+            player.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(material, amount));
         });
     }
 
