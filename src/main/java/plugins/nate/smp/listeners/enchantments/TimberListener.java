@@ -66,7 +66,7 @@ public class TimberListener implements Listener {
     }
 
     private boolean isLog(Material type) {
-        return type.name().contains("LOG") || type.name().contains("WOOD") || type.name().contains("STEM");
+        return type.name().contains("LOG") || type.name().contains("WOOD") || type.name().contains("STEM") || type.name().contains("HYPHAE");
     }
 
     private void destroyTree(Block block, List<ItemStack> drops, AtomicInteger blocksDestroyed, Set<Block> checkedBlocks, Player player) {
