@@ -15,11 +15,13 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -28,6 +30,7 @@ import org.joml.Math;
 import plugins.nate.smp.SMP;
 import plugins.nate.smp.guis.TellerDepositGUI;
 import plugins.nate.smp.guis.TellerWithdrawGUI;
+import plugins.nate.smp.utils.ChatUtils;
 import plugins.nate.smp.utils.SMPUtils;
 import plugins.nate.smp.utils.TellerUtils;
 import plugins.nate.smp.utils.VaultUtils;
@@ -60,6 +63,12 @@ public class TellerTradeListener implements Listener {
                     clickedEntity.getLocation().getX() + " Y: " + clickedEntity.getLocation().getY() + " Z: " + clickedEntity.getLocation().getZ());
             sendMessage(player, PREFIX + "&cAn error has occurred. Please contact staff or make a ticket in the discord: discord.gg/coolment");
             return;
+        }
+        
+        // Closing existing open tellers, preventing an exploit
+        if (!(player.getOpenInventory().getTopInventory() instanceof CraftingInventory)) {
+            ChatUtils.broadcastMessage(ChatUtils.SERVER_PREFIX + "&7" + player.getName() + " &cis suspected of sending false packets to the bank tellers.", "smp.tellerreport");
+            event.getPlayer().getOpenInventory().close();
         }
 
         switch (tellerKey.toLowerCase()) {
@@ -220,13 +229,32 @@ public class TellerTradeListener implements Listener {
         }
 
         if (diff > 0) {
-            VaultUtils.withdraw(player, diff);
-            sendMessage(player, PREFIX + "&aSuccessfully withdrew " + diff + CURRENCY_SYMBOL);
+            boolean success = VaultUtils.withdraw(player, diff);
+            if (success) {
+                sendMessage(player, PREFIX + "&aSuccessfully withdrew " + diff + CURRENCY_SYMBOL);
+                return;
+            }
+            sendMessage(player, PREFIX + "&cTransaction failed!");
+            
+            int numDiaBlocks = (int) Math.floor(diff / 9);
+            int numDia = diff - numDiaBlocks * 9;
+            takeItems(player, Material.DIAMOND_BLOCK, numDiaBlocks);
+            takeItems(player, Material.DIAMOND, numDia);
         } else {
             int deposited = Math.abs(diff);
             VaultUtils.deposit(player, deposited);
             sendMessage(player, PREFIX + "&aSuccessfully deposited " + deposited + CURRENCY_SYMBOL);
             displayBalance(player);
+        }
+    }
+
+    @EventHandler
+    public void onDeath(PlayerDeathEvent event) {
+        Player player = event.getEntity();
+         // Closing existing open tellers, preventing an exploit
+         if (!(player.getOpenInventory().getTopInventory() instanceof CraftingInventory)) {
+            ChatUtils.broadcastMessage(ChatUtils.SERVER_PREFIX + "&7" + player.getName() + " &cis suspected of sending false packets to the bank tellers.", "smp.tellerreport");
+            player.getOpenInventory().close();
         }
     }
 
@@ -289,6 +317,27 @@ public class TellerTradeListener implements Listener {
         return false;
     }
 
+    private void takeItems(Player player, Material itemType, int amount) {
+        ItemStack[] contents = player.getInventory().getContents();
+
+        for (ItemStack item : contents) {
+            if (amount == 0) {
+                return;
+            }
+            if (item == null || item.getType() != itemType) {
+                continue;
+            }
+            int stackSize = item.getAmount();
+            amount = amount - stackSize;
+            if (amount <= 0) {
+                item.setAmount(Math.abs(amount));
+                return;
+            }
+            if (amount > 0) {
+                item.setAmount(0);
+            }
+        }
+    }
 
     /**
      * Creates an action bar to display a player their balance
