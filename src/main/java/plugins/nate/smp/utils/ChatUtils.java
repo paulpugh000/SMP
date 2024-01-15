@@ -3,6 +3,8 @@ package plugins.nate.smp.utils;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
+
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -15,6 +17,10 @@ public class ChatUtils {
 
     public static void sendMessage(CommandSender sender, String message) {
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
+    }
+
+    public static void broadcastMessage(String message, String permission) {
+        Bukkit.broadcast(ChatColor.translateAlternateColorCodes('&', message), permission);
     }
 
     public static void createActionBar(Player player, String message) {
