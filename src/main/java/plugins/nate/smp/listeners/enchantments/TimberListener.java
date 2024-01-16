@@ -61,12 +61,12 @@ public class TimberListener implements Listener {
                 .collect(Collectors.groupingBy(ItemStack::getType, Collectors.summingInt(ItemStack::getAmount)));
 
         consolidatedDrops.forEach((material, amount) -> {
-            player.getWorld().dropItemNaturally(player.getLocation(), new ItemStack(material, amount));
+            player.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(material, amount));
         });
     }
 
     private boolean isLog(Material type) {
-        return type.name().contains("LOG") || type.name().contains("WOOD") || type.name().contains("STEM");
+        return type.name().contains("LOG") || type.name().contains("WOOD") || type.name().contains("STEM") || type.name().contains("HYPHAE");
     }
 
     private void destroyTree(Block block, List<ItemStack> drops, AtomicInteger blocksDestroyed, Set<Block> checkedBlocks, Player player) {
