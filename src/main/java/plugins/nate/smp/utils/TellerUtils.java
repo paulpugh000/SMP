@@ -20,7 +20,7 @@ public class TellerUtils {
     public static void createWithdrawTeller(Player player) {
         player.getWorld().spawn(player.getLocation(), Villager.class, (villager) -> {
             configureTeller(villager, "WITHDRAW", player);
-            createTextDisplay(player, villager, "Withdraw Diamonds (" + CURRENCY_SYMBOL + ")");
+            createTextDisplay(player, villager, "(" + CURRENCY_SYMBOL + ") Diamond Teller");
         });
     }
 
