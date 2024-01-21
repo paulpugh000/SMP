@@ -13,7 +13,7 @@ public class TellerUtils {
     public static void createDepositTeller(Player player) {
         player.getWorld().spawn(player.getLocation(), Villager.class, (villager) -> {
             configureTeller(villager, "DEPOSIT", player);
-            createTextDisplay(player, villager, "Deposit Diamonds (" + CURRENCY_SYMBOL + ")");
+            createTextDisplay(player, villager, "(" + CURRENCY_SYMBOL + ") Diamond Deposit Only");
         });
     }
 
