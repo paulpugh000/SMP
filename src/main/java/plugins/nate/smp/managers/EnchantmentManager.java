@@ -17,8 +17,10 @@ import plugins.nate.smp.enchantments.TimberEnchant;
 import plugins.nate.smp.enchantments.VeinMinerEnchant;
 
 import java.lang.reflect.Field;
-import java.sql.Array;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class EnchantmentManager implements Listener {
@@ -37,11 +39,6 @@ public class EnchantmentManager implements Listener {
         LORE_MAP.put(new TimberEnchant(), ChatColor.GOLD + "Timber");
     }
 
-    /**
-     * Registers the custom enchantments
-     *
-     * @param key The key of the custom enchantment to register.
-     */
     public static void registerEnchantment(String key) {
         try {
             Field f = Enchantment.class.getDeclaredField("acceptingNew");
@@ -53,29 +50,14 @@ public class EnchantmentManager implements Listener {
         }
     }
 
-    /**
-     * Retrieves a custom enchantment by its key.
-     *
-     * @param key The key of the enchantment.
-     * @return The enchantment associated with the given key.
-     */
     public static Enchantment getEnchantment(String key) {
         return ENCHANTMENTS.get(key);
     }
 
-    /**
-     * Registers all custom enchantments.
-     */
     public static void registerEnchants() {
         ENCHANTMENTS.keySet().forEach(EnchantmentManager::registerEnchantment);
     }
 
-    /**
-     * Event handler for the enchant item event.
-     * Applies custom enchantments based on certain conditions.
-     *
-     * @param event The enchant item event.
-     */
     @EventHandler
     public static void onEnchantItem(EnchantItemEvent event) {
         ItemStack item = event.getItem();
@@ -113,13 +95,6 @@ public class EnchantmentManager implements Listener {
                 });
     }
 
-    /**
-     * Handles the anvil events when working with custom enchantments. This method is called whenever items are placed in both slots of an anvil.
-     * It manages the merging of enchantments from two items, ensuring custom enchantments are applied correctly and generating
-     * the appropriate lore for the result item. This method also handles special cases, such as when an enchanted book is involved.
-     *
-     * @param event The PrepareAnvilEvent provided by the Minecraft server API.
-     */
     @EventHandler
     public static void onAnvilPrepare(PrepareAnvilEvent event) {
         // Retrieve the items in the first and second slots of the anvil, and what the item will be renamed to.
@@ -194,47 +169,25 @@ public class EnchantmentManager implements Listener {
 
         // Finalize the result item by setting its metadata and setting it as the event's result.
         resultItem.setItemMeta(resultMeta);
-
         event.setResult(resultItem);
     }
 
-    /**
-     * Checks if an item has a custom enchantment.
-     *
-     * @param item The item to check for custom enchantments.
-     * @return true if the item has a custom enchantment, false otherwise.
-     */
     private static boolean hasCustomEnchant(@NotNull ItemStack item) {
         return !getCustomEnchants(item).isEmpty();
     }
 
-    /**
-     * Gets a list of the custom enchantments and their level on an item.
-     *
-     * @param item The item to check for custom enchantments.
-     * @return map of custom enchantments on the item.
-     */
     private static Map<Enchantment, Integer> getCustomEnchants(@NotNull ItemStack item) {
-        Map<Enchantment, Integer> enchants = new HashMap<>(item.getEnchantments());
-        List<Enchantment> toRemove = new ArrayList<>();
-        for (Enchantment enchant : enchants.keySet()) {
-            if (!ENCHANTMENTS.containsValue(enchant)) {
-                toRemove.add(enchant);
-            }
+        if (item.getItemMeta() instanceof EnchantmentStorageMeta meta) {
+            return meta.getStoredEnchants().entrySet().stream()
+                    .filter(entry -> ENCHANTMENTS.containsValue(entry.getKey()))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        } else {
+            return item.getEnchantments().entrySet().stream()
+                    .filter(entry -> ENCHANTMENTS.containsValue(entry.getKey()))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         }
-
-        toRemove.forEach(enchants::remove);
-
-        return enchants;
     }
 
-    /**
-     * Merges the enchantments from two maps, choosing the highest level of overlapping enchantments.
-     *
-     * @param firstItemEnchants  Enchantments from the first item.
-     * @param secondItemEnchants Enchantments from the second item.
-     * @return A map containing the merged enchantments.
-     */
     private static Map<Enchantment, Integer> mergeEnchantments(Map<Enchantment, Integer> firstItemEnchants, Map<Enchantment, Integer> secondItemEnchants) {
         Map<Enchantment, Integer> mergedEnchantments = new HashMap<>(firstItemEnchants);
 
@@ -254,12 +207,6 @@ public class EnchantmentManager implements Listener {
         return mergedEnchantments;
     }
 
-    /**
-     * Generates a list of custom lore based on the enchantments present.
-     *
-     * @param enchantments The enchantments to generate lore for.
-     * @return A list of lore strings.
-     */
     private static List<String> getCustomLore(Map<Enchantment, Integer> enchantments) {
         List<String> customLore = new ArrayList<>();
 

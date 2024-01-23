@@ -28,7 +28,18 @@ public class ChestLockListener implements Listener {
     private static final String LOCKED_TAG = "[LockedV2]";
     private static final BlockFace[] CARDINAL_FACES = { BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
     private static final BlockFace[] FACES_TO_CHECK = { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
-    private static final Set<Material> STORAGE_CONTAINERS = EnumSet.of(Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
+    private static final Set<Material> STORAGE_CONTAINERS = EnumSet.of(
+            Material.CHEST,
+            Material.TRAPPED_CHEST,
+            Material.BARREL,
+            Material.HOPPER,
+            Material.FURNACE,
+            Material.SMOKER,
+            Material.BLAST_FURNACE,
+            Material.DROPPER,
+            Material.DISPENSER,
+            Material.BREWING_STAND
+    );
 
     // TODO: Prevent multiple people from placing lock signs on a single chest or double chest.
 
@@ -74,7 +85,7 @@ public class ChestLockListener implements Listener {
             Sign attachedSign = getAttachedSign(event.getClickedBlock());
             // If valid sign and doesn't have access
             if (attachedSign != null && isLockedSign(attachedSign) && !playerHasAccess(event.getPlayer(), attachedSign)) {
-                sendMessageAndCancel(event, event.getPlayer(), "&cThis chest is locked");
+                sendMessageAndCancel(event, event.getPlayer(), "&cThis container is locked");
             }
         }
     }
@@ -126,7 +137,7 @@ public class ChestLockListener implements Listener {
     */
     private void processBlockBreak(BlockBreakEvent event, Player player, Sign sign) {
         if (sign != null && isLockedSign(sign) && !playerCanInteract(player, sign)) {
-            sendMessageAndCancel(event, player, isStorageContainer(getAttachedBlock(sign.getBlock()).getType()) ? "&cThis chest is locked" : "&cYou cannot break a lock");
+            sendMessageAndCancel(event, player, isStorageContainer(getAttachedBlock(sign.getBlock()).getType()) ? "&cThis container is locked" : "&cYou cannot break a lock");
         }
     }
 

@@ -8,6 +8,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.logging.Level;
+
 public class ChatUtils {
 
     public static final String PREFIX = "&8[&a&lSMP&8] &r";
@@ -22,7 +24,6 @@ public class ChatUtils {
     public static void broadcastMessage(String message, String permission) {
         Bukkit.broadcast(ChatColor.translateAlternateColorCodes('&', message), permission);
         Bukkit.getLogger().log(Level.INFO, "Broadcasting to permission node " + permission + ": " + message);
-
     }
 
     public static void createActionBar(Player player, String message) {
