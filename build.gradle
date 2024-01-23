@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'maven-publish'
 }
 
 group = 'plugins.nate'
@@ -11,10 +12,12 @@ repositories {
     maven { url 'https://oss.sonatype.org/content/groups/public/' }
     maven { url 'https://maven.playpro.com' }
     maven { url 'https://maven.enginehub.org/repo/' }
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
     implementation 'org.jetbrains:annotations:24.0.0'
+    implementation 'com.github.Coolment-Content-Creation:SMPApi:1.0'
     compileOnly "org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT"
     compileOnly 'com.sk89q.worldedit:worldedit-bukkit:7.2.14'
     compileOnly 'com.sk89q.worldguard:worldguard-core:7.0.4'
@@ -77,4 +80,9 @@ jar {
     }
 
     dependsOn createExternalOutputDir
+}
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
