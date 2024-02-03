@@ -93,12 +93,6 @@ public class PlayerSettingsManager {
         }
     }
 
-    /**
-     *
-     * @param trustsFile
-     * @param settingsFile
-     * @return If the file save succeeded
-     */
     private static void convertTrustsYML(File trustsFile, File settingsFile) {
         YamlConfiguration trustsConfig = YamlConfiguration.loadConfiguration(trustsFile);
         YamlConfiguration settingsConfig = YamlConfiguration.loadConfiguration(settingsFile);
