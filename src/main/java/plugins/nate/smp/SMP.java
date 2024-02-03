@@ -11,7 +11,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import plugins.nate.smp.managers.ElytraGlidingTracker;
 import plugins.nate.smp.managers.EnchantmentManager;
 import plugins.nate.smp.managers.RecipeManager;
-import plugins.nate.smp.managers.TrustManager;
+import plugins.nate.smp.managers.PlayerSettingsManager;
 import plugins.nate.smp.utils.*;
 
 import java.io.File;
@@ -35,7 +35,7 @@ public final class SMP extends JavaPlugin {
         plugin = this;
         coreProtect = SMPUtils.loadCoreProtect();
 
-        TrustManager.init(this.getDataFolder());
+        PlayerSettingsManager.init(this.getDataFolder());
 
         DependencyUtils.checkDependencies();
         EventRegistration.registerEvents(this);

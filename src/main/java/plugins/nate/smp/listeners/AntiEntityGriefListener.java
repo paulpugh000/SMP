@@ -14,7 +14,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.persistence.PersistentDataType;
-import plugins.nate.smp.managers.TrustManager;
+import plugins.nate.smp.managers.PlayerSettingsManager;
 import plugins.nate.smp.utils.ChatUtils;
 import plugins.nate.smp.utils.SMPUtils;
 
@@ -251,7 +251,7 @@ public class AntiEntityGriefListener implements Listener {
             }
 
             UUID ownerUUID = getEntityOwner(e.getRightClicked());
-            Set<UUID> trustedPlayersUUID = TrustManager.getTrustedPlayers(ownerUUID);
+            Set<UUID> trustedPlayersUUID = PlayerSettingsManager.getTrustedPlayers(ownerUUID);
             if (ownerUUID != null && !e.getPlayer().getUniqueId().equals(ownerUUID) && !trustedPlayersUUID.contains(e.getPlayer().getUniqueId())) {
                 String ownerName = Bukkit.getOfflinePlayer(ownerUUID).getName();
                 sendMessage(e.getPlayer(), ChatUtils.PREFIX + "&cError: " + ownerName + " has claimed this entity and has disabled trading!");

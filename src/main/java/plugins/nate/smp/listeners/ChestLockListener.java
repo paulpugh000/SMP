@@ -14,7 +14,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.persistence.PersistentDataType;
-import plugins.nate.smp.managers.TrustManager;
+import plugins.nate.smp.managers.PlayerSettingsManager;
 import plugins.nate.smp.utils.SMPUtils;
 
 import java.util.Arrays;
@@ -268,7 +268,7 @@ public class ChestLockListener implements Listener {
 
         UUID ownerUUID = getLockedSignOwner(attachedSign);
 
-        Set<UUID> trustedPlayersUUID = TrustManager.getTrustedPlayers(ownerUUID);
+        Set<UUID> trustedPlayersUUID = PlayerSettingsManager.getTrustedPlayers(ownerUUID);
         return player.getUniqueId().equals(ownerUUID) || trustedPlayersUUID.contains(player.getUniqueId());
     }
 

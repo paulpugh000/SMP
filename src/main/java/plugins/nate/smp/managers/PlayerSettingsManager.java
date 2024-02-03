@@ -11,23 +11,27 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class TrustManager {
+public class PlayerSettingsManager {
     private static final HashMap<UUID, HashSet<UUID>> trustRelations = new HashMap<>();
-    private static File file;
+    private static File settingsFile;
     private static FileConfiguration config;
 
     public static void init(File dataFolder) {
-        file = new File(dataFolder, "trusts.yml");
+        File trustsFile = new File(dataFolder, "trusts.yml");
+        settingsFile = new File(dataFolder, "player-settings.yml");
 
-        if (!file.exists()) {
+        if (!settingsFile.exists()) {
             try {
-                file.createNewFile();
+                settingsFile.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            if (trustsFile.exists()) {
+                convertTrustsYML(trustsFile, settingsFile);
+            }
         }
 
-        config = YamlConfiguration.loadConfiguration(file);
+        config = YamlConfiguration.loadConfiguration(settingsFile);
         load();
     }
 
@@ -72,11 +76,11 @@ public class TrustManager {
 
     private static void save() {
         for (UUID ownerUUID : trustRelations.keySet()) {
-            config.set(ownerUUID.toString(), new ArrayList<>(convertSetToUUIDStrings(trustRelations.get(ownerUUID))));
+            config.set(ownerUUID.toString() + ".trusts", new ArrayList<>(convertSetToUUIDStrings(trustRelations.get(ownerUUID))));
         }
 
         try {
-            config.save(file);
+            config.save(settingsFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -84,8 +88,29 @@ public class TrustManager {
 
     private static void load() {
         for (String ownerUUIDString : config.getKeys(false)) {
-            Set<String> trustedUUIDStrings = new HashSet<>(config.getStringList(ownerUUIDString));
+            Set<String> trustedUUIDStrings = new HashSet<>(config.getStringList(ownerUUIDString + ".trusts"));
             trustRelations.put(UUID.fromString(ownerUUIDString), convertStringsToUUIDSet(trustedUUIDStrings));
+        }
+    }
+
+    /**
+     *
+     * @param trustsFile
+     * @param settingsFile
+     * @return If the file save succeeded
+     */
+    private static void convertTrustsYML(File trustsFile, File settingsFile) {
+        YamlConfiguration trustsConfig = YamlConfiguration.loadConfiguration(trustsFile);
+        YamlConfiguration settingsConfig = YamlConfiguration.loadConfiguration(settingsFile);
+
+        for (String playerUUID : trustsConfig.getKeys(false)) {
+            settingsConfig.set(playerUUID + ".trusts", trustsConfig.getStringList(playerUUID));
+        }
+
+        try {
+            settingsConfig.save(settingsFile);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

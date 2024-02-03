@@ -12,7 +12,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
-import plugins.nate.smp.managers.TrustManager;
+import plugins.nate.smp.managers.PlayerSettingsManager;
 import plugins.nate.smp.utils.ChatUtils;
 import plugins.nate.smp.utils.SMPUtils;
 import plugins.nate.smp.utils.TellerUtils;
@@ -64,7 +64,7 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
                     return Collections.emptyList();
                 }
 
-                return TrustManager.getTrustedPlayerNames(player.getUniqueId()).stream()
+                return PlayerSettingsManager.getTrustedPlayerNames(player.getUniqueId()).stream()
                         .map(String::toLowerCase)
                         .filter(trustedPlayerName -> trustedPlayerName.startsWith(args[1].toLowerCase()))
                         .sorted()
@@ -210,9 +210,9 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
 
         boolean updated;
         if (action.equals("trust")) {
-            updated = TrustManager.trustPlayer(player, target);
+            updated = PlayerSettingsManager.trustPlayer(player, target);
         } else {
-            updated = TrustManager.untrustPlayer(player, target);
+            updated = PlayerSettingsManager.untrustPlayer(player, target);
         }
 
         if (updated) {
@@ -227,7 +227,7 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        Set<UUID> trustedPlayers = TrustManager.getTrustedPlayers(player.getUniqueId());
+        Set<UUID> trustedPlayers = PlayerSettingsManager.getTrustedPlayers(player.getUniqueId());
         if (trustedPlayers.isEmpty()) {
             sendMessage(player, ChatUtils.PREFIX + "&cYou have not trusted any players");
             return;
