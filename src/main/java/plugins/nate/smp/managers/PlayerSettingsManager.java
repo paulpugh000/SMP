@@ -13,8 +13,12 @@ import java.util.stream.Collectors;
 
 public class PlayerSettingsManager {
     private static final HashMap<UUID, HashSet<UUID>> trustRelations = new HashMap<>();
+    private static final HashMap<UUID, Boolean> pvpStatusMap = new HashMap<>();
+    private static final String TRUSTS_PATH = ".trusts";
+    private static final String PVP_PATH = ".pvp-enabled";
     private static File settingsFile;
     private static FileConfiguration config;
+
 
     public static void init(File dataFolder) {
         File trustsFile = new File(dataFolder, "trusts.yml");
@@ -59,6 +63,15 @@ public class PlayerSettingsManager {
         return removed;
     }
 
+    public static void setPvPStatus(Player player, boolean pvpStatus) {
+        pvpStatusMap.put(player.getUniqueId(), pvpStatus);
+    }
+
+    public static boolean getPvPStatus(Player player) {
+        // TODO: Change defaultValue with config
+        return pvpStatusMap.getOrDefault(player.getUniqueId(), true);
+    }
+
     public static Set<UUID> getTrustedPlayers(UUID ownerUUID) {
         if (ownerUUID == null) {
             return null;
@@ -76,7 +89,8 @@ public class PlayerSettingsManager {
 
     private static void save() {
         for (UUID ownerUUID : trustRelations.keySet()) {
-            config.set(ownerUUID.toString() + ".trusts", new ArrayList<>(convertSetToUUIDStrings(trustRelations.get(ownerUUID))));
+            config.set(ownerUUID.toString() + TRUSTS_PATH, new ArrayList<>(convertSetToUUIDStrings(trustRelations.get(ownerUUID))));
+            config.set(ownerUUID.toString() + PVP_PATH, pvpStatusMap.get(ownerUUID).toString());
         }
 
         try {
@@ -88,8 +102,9 @@ public class PlayerSettingsManager {
 
     private static void load() {
         for (String ownerUUIDString : config.getKeys(false)) {
-            Set<String> trustedUUIDStrings = new HashSet<>(config.getStringList(ownerUUIDString + ".trusts"));
+            Set<String> trustedUUIDStrings = new HashSet<>(config.getStringList(ownerUUIDString + TRUSTS_PATH));
             trustRelations.put(UUID.fromString(ownerUUIDString), convertStringsToUUIDSet(trustedUUIDStrings));
+            pvpStatusMap.put(UUID.fromString(ownerUUIDString), config.getBoolean(ownerUUIDString + PVP_PATH));
         }
     }
 
@@ -98,7 +113,7 @@ public class PlayerSettingsManager {
         YamlConfiguration settingsConfig = YamlConfiguration.loadConfiguration(settingsFile);
 
         for (String playerUUID : trustsConfig.getKeys(false)) {
-            settingsConfig.set(playerUUID + ".trusts", trustsConfig.getStringList(playerUUID));
+            settingsConfig.set(playerUUID + TRUSTS_PATH, trustsConfig.getStringList(playerUUID));
         }
 
         try {

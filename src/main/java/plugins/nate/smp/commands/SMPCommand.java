@@ -37,6 +37,7 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
             case "forcelock" -> handleForceLockCommand(sender, args);
             case "lockholder" -> handleLockHolderCommand(sender);
             case "help" -> handleHelpCommand(sender);
+            case "pvp" -> handlePvPCommand(sender, args);
             case "features" -> handleFeaturesCommand(sender);
             case "trust", "untrust" -> handleTrustCommands(sender, args);
             case "trustlist" -> handleTrustListCommand(sender);
@@ -54,21 +55,26 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
                     .filter(subcommand -> subcommand.startsWith(args[0].toLowerCase()))
                     .toList();
         } else if (args.length == 2) {
-            if ("trust".equalsIgnoreCase(args[0])) {
-                return getAllOnlinePlayerNames().stream()
+            switch (args[0].toLowerCase()) {
+                case "trust":
+                    return getAllOnlinePlayerNames().stream()
                         .map(String::toLowerCase)
                         .filter(playerName -> playerName.startsWith(args[1].toLowerCase()))
                         .toList();
-            } else if ("untrust".equalsIgnoreCase(args[0])) {
-                if (!(sender instanceof Player player)) {
-                    return Collections.emptyList();
-                }
+                case "untrust":
+                    if (!(sender instanceof Player player)) {
+                        return Collections.emptyList();
+                    }
 
-                return PlayerSettingsManager.getTrustedPlayerNames(player.getUniqueId()).stream()
+                    return PlayerSettingsManager.getTrustedPlayerNames(player.getUniqueId()).stream()
                         .map(String::toLowerCase)
                         .filter(trustedPlayerName -> trustedPlayerName.startsWith(args[1].toLowerCase()))
                         .sorted()
                         .toList();
+                case "pvp":
+                    return PvPCommand.SUBCOMMANDS.stream()
+//                            .filter(subcommand -> subcommand.startsWith(args[0].toLowerCase()))
+                            .toList();
             }
         }
 
@@ -166,6 +172,16 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
         OfflinePlayer signOwner = Bukkit.getOfflinePlayer(signOwnerUUID);
 
         sendMessage(sender, ChatUtils.PREFIX + "&a" + signOwner.getName() + " &7is the owner of this lock.");
+    }
+
+    private static void handlePvPCommand(CommandSender sender, String[] args) {
+        switch (args[0]) {
+            case "enable" -> PvPCommand.disablePvP(sender);
+            case "disable" -> PvPCommand.enablePvP(sender);
+            case "toggle" -> PvPCommand.togglePvP(sender);
+            case "help" -> PvPCommand.pvpHelp(sender);
+            default -> PvPCommand.handleInvalidArg(sender);
+        }
     }
 
     private static void handleHelpCommand(CommandSender sender) {

@@ -4,6 +4,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
 import plugins.nate.smp.SMP;
 import plugins.nate.smp.commands.DevCommand;
+import plugins.nate.smp.commands.PvPCommand;
 import plugins.nate.smp.commands.SMPCommand;
 import plugins.nate.smp.commands.SayCommand;
 
@@ -13,6 +14,7 @@ public class CommandRegistration {
         setupCommand("smp", new SMPCommand(), plugin);
         setupCommand("dev", new DevCommand(), plugin);
         setupCommand("say", new SayCommand(), plugin);
+        setupCommand("pvp", new PvPCommand(), plugin);
     }
 
     private static void setupCommand(String commandLabel, CommandExecutor executor, SMP plugin) {
