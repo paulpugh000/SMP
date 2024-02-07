@@ -91,9 +91,9 @@ public class PvPCommand implements TabCompleter, CommandExecutor {
         sendMessage(sender, "&8&m------------------------&8&l[&a&lSMP&8&l]&8&m------------------------");
         sendMessage(sender, "&a/pvp help &7- Displays this menu");
         sendMessage(sender, "&a/pvp toggle &7- Toggles your PvP status");
-        sendMessage(sender, "&a/smp status &7- Displays your PvP status");
-        sendMessage(sender, "&a/smp enable &7- Enables PvP for you");
-        sendMessage(sender, "&a/smp disable &7- Disables PvP for you");
+        sendMessage(sender, "&a/pvp status &7- Displays your PvP status");
+        sendMessage(sender, "&a/pvp enable &7- Enables PvP for you");
+        sendMessage(sender, "&a/pvp disable &7- Disables PvP for you");
     }
 
     public static void pvpStatus(CommandSender sender) {
