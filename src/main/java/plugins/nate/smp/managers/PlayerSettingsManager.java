@@ -65,6 +65,7 @@ public class PlayerSettingsManager {
 
     public static void setPvPStatus(Player player, boolean pvpStatus) {
         pvpStatusMap.put(player.getUniqueId(), pvpStatus);
+        save();
     }
 
     public static boolean getPvPStatus(Player player) {
@@ -90,7 +91,7 @@ public class PlayerSettingsManager {
     private static void save() {
         for (UUID ownerUUID : trustRelations.keySet()) {
             config.set(ownerUUID.toString() + TRUSTS_PATH, new ArrayList<>(convertSetToUUIDStrings(trustRelations.get(ownerUUID))));
-            config.set(ownerUUID.toString() + PVP_PATH, pvpStatusMap.get(ownerUUID).toString());
+            config.set(ownerUUID.toString() + PVP_PATH, pvpStatusMap.get(ownerUUID));
         }
 
         try {

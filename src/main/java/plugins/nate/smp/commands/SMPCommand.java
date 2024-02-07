@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import static plugins.nate.smp.utils.ChatUtils.sendMessage;
 
 public class SMPCommand implements CommandExecutor, TabCompleter {
-    private static final Set<String> VALID_SUBCOMMANDS = Set.of("help", "features", "reload", "forcelock", "lockholder", "teller", "trust", "untrust", "trustlist", "lock", "unlock");
+    private static final Set<String> VALID_SUBCOMMANDS = Set.of("help", "pvp", "features", "reload", "forcelock", "lockholder", "teller", "trust", "untrust", "trustlist", "lock", "unlock");
     
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
@@ -73,7 +73,7 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
                         .toList();
                 case "pvp":
                     return PvPCommand.SUBCOMMANDS.stream()
-//                            .filter(subcommand -> subcommand.startsWith(args[0].toLowerCase()))
+                            .filter(subcommand -> subcommand.startsWith(args[1].toLowerCase()))
                             .toList();
             }
         }
@@ -175,11 +175,16 @@ public class SMPCommand implements CommandExecutor, TabCompleter {
     }
 
     private static void handlePvPCommand(CommandSender sender, String[] args) {
-        switch (args[0]) {
-            case "enable" -> PvPCommand.disablePvP(sender);
-            case "disable" -> PvPCommand.enablePvP(sender);
+        if (args.length == 1) {
+            PvPCommand.pvpHelp(sender);
+            return;
+        }
+        switch (args[1]) {
+            case "disable" -> PvPCommand.disablePvP(sender);
+            case "enable" -> PvPCommand.enablePvP(sender);
             case "toggle" -> PvPCommand.togglePvP(sender);
             case "help" -> PvPCommand.pvpHelp(sender);
+            case "status" -> PvPCommand.pvpStatus(sender);
             default -> PvPCommand.handleInvalidArg(sender);
         }
     }

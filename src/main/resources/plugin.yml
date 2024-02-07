@@ -23,6 +23,8 @@ commands:
     usage: /<command>
   say:
     usage: /<command>
+  pvp:
+    usage: /<command>
 
 permissions:
   smp.chestlock.bypass:
